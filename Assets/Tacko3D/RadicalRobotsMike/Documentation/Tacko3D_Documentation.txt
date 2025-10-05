@@ -1,0 +1,8 @@
+Tacko3D Documentation:
+
+Each Model includes PBR textures, including an ARM texture and RGB mask.
+Each material is reliant on the use of my Shadergraph M_Weapon_Parent. This asset allows for customization and variation of each model using parameters exposed on the graph. 
+You may pick up to 3 colors, Emission Color, Normal Map Intensity, 3 Smoothness levels, 3 Metallic Levels, Ambient Occlusion Intensity.
+In the Demo map, you will find each model laid out with premade variations for you to use or to use as a baseline for further permutations.
+
+For more information or if you have questions, follow @Tacko3D and @SpinJumpGames on social media.
