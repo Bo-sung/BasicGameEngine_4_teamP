@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 2223418409092269418}
   - component: {fileID: 6841512634174719543}
   m_Layer: 0
-  m_Name: Projectile_Disc
+  m_Name: Rocket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -106,23 +106,23 @@ MonoBehaviour:
   Radius: 0.2
   Root: {fileID: 106790115311484948}
   Tip: {fileID: 106790115311484948}
-  MaxLifeTime: 5
+  MaxLifeTime: 10
   ImpactVfx: {fileID: 4260779743739990948, guid: bbe6bdea7cd168e428a309e9eb2e728b, type: 3}
-  ImpactVfxLifetime: 5
+  ImpactVfxLifetime: 10
   ImpactVfxSpawnOffset: 0.1
   ImpactSfxClip: {fileID: 8300000, guid: cba089de3eef16d46baeda4077140a74, type: 3}
   HittableLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  Speed: 30
-  GravityDownAcceleration: 10
+  Speed: 100
+  GravityDownAcceleration: 0
   TrajectoryCorrectionDistance: -1
   InheritWeaponVelocity: 0
-  Damage: 40
+  Damage: 100
   AreaOfDamage: {fileID: 1203337828444365110}
   RadiusColor: {r: 0, g: 1, b: 1, a: 0.49803922}
-  HasExplosion: 0
-  ExplosionRadius: 0
+  HasExplosion: 1
+  ExplosionRadius: 5
 --- !u!114 &1203337828444365110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -168,7 +168,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 106790115311484953}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3614fdf64d310f44ba678e99290fa20a, type: 3}
   m_Name: 

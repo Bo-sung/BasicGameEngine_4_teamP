@@ -55,6 +55,13 @@ namespace Unity.FPS.Gameplay
         [Header("Debug")] [Tooltip("Color of the projectile radius debug view")]
         public Color RadiusColor = Color.cyan * 0.2f;
 
+        [Header("Explosion Settings")]
+        [Tooltip("If true, the projectile will create an explosion on impact.")]
+        public bool HasExplosion = false;
+
+        [Tooltip("Radius of the explosion effect. Set to 0 for no explosion radius.")]
+        public float ExplosionRadius = 0;
+
         ProjectileBase m_ProjectileBase;
         Vector3 m_LastRootPosition;
         Vector3 m_Velocity;
