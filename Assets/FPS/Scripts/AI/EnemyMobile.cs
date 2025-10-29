@@ -1,6 +1,9 @@
 ﻿using Unity.FPS.Game;
 using UnityEngine;
 
+// 공격 시 정지하는 거리는 고정 하되, 피격은 근접으로
+// 공격 사거리 조정은 Enemy_HoverBot의 자식 DetectionModule에 있음
+
 namespace Unity.FPS.AI
 {
     [RequireComponent(typeof(EnemyController))]
@@ -8,18 +11,18 @@ namespace Unity.FPS.AI
     {
         public enum AIState
         {
-            Patrol,
-            Follow,
-            Attack,
+            Patrol, // 순찰
+            Follow, // 추적
+            Attack, // 공격
         }
 
         public Animator Animator;
 
-        [Tooltip("Fraction of the enemy's attack range at which it will stop moving towards target while attacking")]
+        [Tooltip("공격 중 타겟을 향해 멈추는 적의 공격 범위 비율")]
         [Range(0f, 1f)]
         public float AttackStopDistanceRatio = 0.5f;
 
-        [Tooltip("The random hit damage effects")]
+        [Tooltip("랜덤 피격 데미지 효과")]
         public ParticleSystem[] RandomHitSparks;
 
         public ParticleSystem[] OnDetectVfx;
@@ -49,10 +52,10 @@ namespace Unity.FPS.AI
             m_EnemyController.SetPathDestinationToClosestNode();
             m_EnemyController.onDamaged += OnDamaged;
 
-            // Start patrolling
+            // 순찰 시작
             AiState = AIState.Patrol;
 
-            // adding a audio source to play the movement sound on it
+            // 이동 사운드를 재생하기 위해 오디오 소스 추가
             m_AudioSource = GetComponent<AudioSource>();
             DebugUtility.HandleErrorIfNullGetComponent<AudioSource, EnemyMobile>(m_AudioSource, this, gameObject);
             m_AudioSource.clip = MovementSound;
@@ -66,21 +69,21 @@ namespace Unity.FPS.AI
 
             float moveSpeed = m_EnemyController.NavMeshAgent.velocity.magnitude;
 
-            // Update animator speed parameter
+            // 애니메이터 속도 매개변수 업데이트
             Animator.SetFloat(k_AnimMoveSpeedParameter, moveSpeed);
 
-            // changing the pitch of the movement sound depending on the movement speed
+            // 이동 속도에 따라 이동 사운드의 피치 변경
             m_AudioSource.pitch = Mathf.Lerp(PitchDistortionMovementSpeed.Min, PitchDistortionMovementSpeed.Max,
                 moveSpeed / m_EnemyController.NavMeshAgent.speed);
         }
 
         void UpdateAiStateTransitions()
         {
-            // Handle transitions 
+            // 상태 전환 처리
             switch (AiState)
             {
                 case AIState.Follow:
-                    // Transition to attack when there is a line of sight to the target
+                    // 타겟에 대한 시야가 있고 공격 범위 내에 있을 때 공격으로 전환
                     if (m_EnemyController.IsSeeingTarget && m_EnemyController.IsTargetInAttackRange)
                     {
                         AiState = AIState.Attack;
@@ -89,7 +92,7 @@ namespace Unity.FPS.AI
 
                     break;
                 case AIState.Attack:
-                    // Transition to follow when no longer a target in attack range
+                    // 더 이상 공격 범위 내에 타겟이 없을 때 추적으로 전환
                     if (!m_EnemyController.IsTargetInAttackRange)
                     {
                         AiState = AIState.Follow;
@@ -101,7 +104,7 @@ namespace Unity.FPS.AI
 
         void UpdateCurrentAiState()
         {
-            // Handle logic 
+            // 현재 상태 로직 처리
             switch (AiState)
             {
                 case AIState.Patrol:
