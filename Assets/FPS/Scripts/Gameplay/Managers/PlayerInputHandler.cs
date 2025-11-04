@@ -106,7 +106,7 @@ namespace Unity.FPS.Gameplay
 
         public bool GetFireInputDown()
         {
-            if(CanProcessInput())
+            if (CanProcessInput())
             {
                 return m_InputActions.Player.Attack.WasPressedThisFrame();
             }
@@ -115,7 +115,7 @@ namespace Unity.FPS.Gameplay
 
         public bool GetFireInputReleased()
         {
-            if(CanProcessInput())
+            if (CanProcessInput())
             {
                 return m_InputActions.Player.Attack.WasReleasedThisFrame();
             }
@@ -133,8 +133,10 @@ namespace Unity.FPS.Gameplay
 
         public bool GetAimInputHeld()
         {
-            // This action was not in the input actions asset, returning false.
-            // You can add an "Aim" action to the "Player" action map.
+            if (CanProcessInput())
+            {
+                return m_InputActions.Player.Aim.IsPressed();
+            }
             return false;
         }
 
@@ -167,8 +169,10 @@ namespace Unity.FPS.Gameplay
 
         public bool GetReloadButtonDown()
         {
-            // This action was not in the input actions asset, returning false.
-            // You can add a "Reload" action to the "Player" action map.
+            if (CanProcessInput())
+            {
+                return m_InputActions.Player.Reload.WasPressedThisFrame();
+            }
             return false;
         }
 
