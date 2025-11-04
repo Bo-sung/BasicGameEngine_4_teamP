@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Unity.FPS.Game
 {
@@ -49,7 +49,7 @@ namespace Unity.FPS.Game
 
     public class AmmoPickupEvent : GameEvent
     {
-        public WeaponController Weapon;
+        public Weapon Weapon;
     }
 
     public class DamageEvent : GameEvent

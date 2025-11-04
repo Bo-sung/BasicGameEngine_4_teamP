@@ -325,6 +325,53 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a7566d85b04856b42a956c9b162ee747, type: 3}
+--- !u!1 &571899921
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 571899923}
+  - component: {fileID: 571899922}
+  m_Layer: 0
+  m_Name: "\uAE30\uBCF8 \uBB34\uAE30_Projectile"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &571899922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 571899921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f03b978548119843b19fbc788f8feee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Speed: 100
+  MaxLifeTime: 5
+  Damage: 25
+--- !u!4 &571899923
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 571899921}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &667004388
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,7 +512,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1148240456261632621, guid: 760248c2a36b42c4a861d9e170e4c86a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3522797411506632401, guid: 760248c2a36b42c4a861d9e170e4c86a, type: 3}
       propertyPath: m_Name
@@ -474,6 +521,18 @@ PrefabInstance:
     - target: {fileID: 3522797411506632401, guid: 760248c2a36b42c4a861d9e170e4c86a, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4298876301734112363, guid: 760248c2a36b42c4a861d9e170e4c86a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4298876301734112363, guid: 760248c2a36b42c4a861d9e170e4c86a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4298876301734112363, guid: 760248c2a36b42c4a861d9e170e4c86a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4298876301734112363, guid: 760248c2a36b42c4a861d9e170e4c86a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -515,6 +574,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7874686802681476625, guid: 760248c2a36b42c4a861d9e170e4c86a, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f41b2cd6f6f5580409774287df9cae6d, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2846,12 +2909,12 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 298744117520805562, guid: 761cdc9e4e883334cbdcea062d0befa7, type: 3}
       propertyPath: StartingWeapons.Array.size
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 298744117520805562, guid: 761cdc9e4e883334cbdcea062d0befa7, type: 3}
       propertyPath: 'StartingWeapons.Array.data[0]'
       value: 
-      objectReference: {fileID: 8323776800172828795, guid: c46cd7f0bf1961445baff2344774aca0, type: 3}
+      objectReference: {fileID: 1884088920315768169, guid: 4476682d23481c2459bc0fa65e74a573, type: 3}
     - target: {fileID: 298744117520805562, guid: 761cdc9e4e883334cbdcea062d0befa7, type: 3}
       propertyPath: 'StartingWeapons.Array.data[1]'
       value: 
@@ -4726,3 +4789,4 @@ SceneRoots:
   - {fileID: 2729281214225025847}
   - {fileID: 9217268748774167426}
   - {fileID: 2729281214382627287}
+  - {fileID: 571899923}

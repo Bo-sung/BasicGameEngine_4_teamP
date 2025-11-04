@@ -60,7 +60,7 @@ namespace Unity.FPS.UI
                 Time.deltaTime * CrosshairUpdateshrpness) * Vector2.one;
         }
 
-        void OnWeaponChanged(WeaponController newWeapon)
+        void OnWeaponChanged(Weapon newWeapon)
         {
             if (newWeapon)
             {

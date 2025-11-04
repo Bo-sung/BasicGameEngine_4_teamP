@@ -23,5 +23,16 @@ namespace Unity.FPS.Game
 
             OnShoot?.Invoke();
         }
+
+        public void Shoot(Weapon controller)
+        {
+            Owner = controller.Owner;
+            InitialPosition = transform.position;
+            InitialDirection = transform.forward;
+            InheritedMuzzleVelocity = controller.MuzzleWorldVelocity;
+            InitialCharge = controller.CurrentCharge;
+
+            OnShoot?.Invoke();
+        }
     }
 }

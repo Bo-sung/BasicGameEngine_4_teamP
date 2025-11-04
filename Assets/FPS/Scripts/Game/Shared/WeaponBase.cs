@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using FPS.Common;
 
 namespace Unity.FPS.Game
@@ -94,6 +94,7 @@ namespace Unity.FPS.Game
 
                 // 발사체 데이터도 로드
                 currentProjectileData = ProjectileDataTable.GetProjectileData(currentWeaponData.projectileID);
+
             }
             else
             {
