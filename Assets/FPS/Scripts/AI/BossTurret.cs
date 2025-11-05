@@ -99,11 +99,11 @@ namespace Unity.FPS.AI
                 m_HasSpawnedMinions = true;
             }
 
-            // 이미 쫄몹을 소환했고 소환 간격이 지났다면 추가 쫄몹 소환 
-            if (m_HasSpawnedMinions && Time.time >= m_LastMinionSpawnTime + MinionSpawnInterval)
-            {
-                StartCoroutine(SpawnMinionsSequence());
-            }
+            //// 이미 쫄몹을 소환했고 소환 간격이 지났다면 추가 쫄몹 소환 
+            //if (m_HasSpawnedMinions && Time.time >= m_LastMinionSpawnTime + MinionSpawnInterval)
+            //{
+            //    StartCoroutine(SpawnMinionsSequence());
+            //}
         }
 
         private IEnumerator SpawnMinionsSequence()
@@ -148,10 +148,10 @@ namespace Unity.FPS.AI
             Transform spawnPoint = MinionSpawnPoints[Random.Range(0, MinionSpawnPoints.Length)];
 
             // 생성 효과 표시
-            if (MinionSpawnVFX)
-            {
-                Instantiate(MinionSpawnVFX, spawnPoint.position, Quaternion.identity);
-            }
+            //if (MinionSpawnVFX)
+            //{
+            //    Instantiate(MinionSpawnVFX, spawnPoint.position, Quaternion.identity);
+            //}
 
             // 쫄몹 생성
             GameObject minion = Instantiate(MinionPrefab, spawnPoint.position, spawnPoint.rotation);
@@ -171,9 +171,9 @@ namespace Unity.FPS.AI
                     // 타겟 정보 전달 - DetectionModule이 자동으로 처리하도록 해야 함
                     // 이 부분은 게임 구조에 따라 조정 필요
                     // 예: 플레이어를 감지하도록 위치 설정
-                    enemyController.DetectionModule.HandleTargetDetection(
-                        m_EnemyController.KnownDetectedTarget.GetComponent<Actor>(),
-                        enemyController.GetComponentsInChildren<Collider>());
+                    //enemyController.DetectionModule.HandleTargetDetection(
+                    //    m_EnemyController.KnownDetectedTarget.GetComponent<Actor>(),
+                    //    enemyController.GetComponentsInChildren<Collider>());
                 }
             }
         }

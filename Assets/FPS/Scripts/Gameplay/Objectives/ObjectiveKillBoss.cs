@@ -35,7 +35,7 @@ namespace Unity.FPS.Gameplay
                 return;
 
             // 죽은 적이 보스인지 확인
-            if (evt.Enemy == BossEnemy ||
+            if (evt.Enemy == BossEnemy &&
                 (evt.Enemy.GetComponent<EnemyController>()))
             {
                 // 보스 처치 목표 완료
