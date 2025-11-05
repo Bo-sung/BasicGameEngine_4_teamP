@@ -76,6 +76,13 @@ namespace Unity.FPS.AI
                 // 죽음 이벤트 핸들러 추가
                 m_Health.OnDie += OnBossDie;
             }
+
+
+            if (MinionSpawnPoints.Length <= 0)
+            {
+                LayerMask obstacles = LayerMask.GetMask("Obstacle", "Wall"); // 장애물 레이어
+                MinionSpawnPoints = GetMinionSpawnPositions(transform, 10f, MinionsPerSpawn, obstacles).ToArray();
+            }
         }
 
         protected override void Update()
@@ -139,10 +146,70 @@ namespace Unity.FPS.AI
             m_LastMinionSpawnTime = Time.time;
         }
 
+        public List<Transform> GetMinionSpawnPositions(Transform bossTransform, float radius, int minionCount, LayerMask obstacleLayer)
+        {
+            List<Transform> spawnPositions = new List<Transform>();
+
+            if (bossTransform == null)
+            {
+                Debug.LogWarning("보스 Transform이 null입니다.");
+                return spawnPositions;
+            }
+
+            // 미니언의 크기를 고려한 충돌 검사 반경
+            float minionRadius = 0.5f; // 미니언의 예상 반경, 필요에 따라 조정
+
+            for (int i = 0; i < minionCount; i++)
+            {
+                bool validPositionFound = false;
+                Vector3 spawnPos = Vector3.zero;
+                int maxAttempts = 30; // 최대 시도 횟수
+
+                for (int attempt = 0; attempt < maxAttempts && !validPositionFound; attempt++)
+                {
+                    // 균등 분포를 위한 무작위 방향 및 거리 계산
+                    Vector3 randomDirection = Random.insideUnitSphere;
+                    randomDirection.y = 0; // Y축은 바닥에 고정 (필요에 따라 조정)
+                    randomDirection.Normalize();
+
+                    // 균등 분포를 위해 제곱근 사용 (2D 원형 영역에서 균등 분포)
+                    float randomDistance = radius * Mathf.Sqrt(Random.value);
+
+                    // 후보 위치 계산
+                    spawnPos = bossTransform.position + randomDirection * randomDistance;
+
+                    // 위치 유효성 검사 (장애물이 없는지)
+                    validPositionFound = !Physics.CheckSphere(spawnPos, minionRadius, obstacleLayer);
+
+                    // NavMesh 사용 시 추가 검사 가능
+                    // validPositionFound = validPositionFound && NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, 1.0f, NavMesh.AllAreas);
+                }
+
+                if (validPositionFound)
+                {
+                    // 유효한 위치에 빈 게임오브젝트 생성
+                    GameObject spawnMarker = new GameObject($"MinionSpawn_{i}");
+                    spawnMarker.transform.position = spawnPos;
+
+                    // 보스를 향해 방향 설정 (미니언이 보스를 바라보도록)
+                    spawnMarker.transform.LookAt(new Vector3(bossTransform.position.x, spawnMarker.transform.position.y, bossTransform.position.z));
+
+                    spawnPositions.Add(spawnMarker.transform);
+                }
+            }
+
+            return spawnPositions;
+        }
+
         private void SpawnMinion()
         {
-            if (MinionPrefab == null || MinionSpawnPoints.Length == 0)
+            if (MinionPrefab == null)
                 return;
+
+            if (MinionSpawnPoints.Length == 0)
+            {
+
+            }
 
             // 랜덤 생성 위치 선택
             Transform spawnPoint = MinionSpawnPoints[Random.Range(0, MinionSpawnPoints.Length)];
