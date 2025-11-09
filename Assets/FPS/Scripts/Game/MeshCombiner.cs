@@ -1,109 +1,106 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace Unity.FPS.Game
+public class MeshCombiner : MonoBehaviour
 {
-    public class MeshCombiner : MonoBehaviour
+    public List<GameObject> CombineParents = new List<GameObject>();
+
+    [Header("Grid parameters")] public bool UseGrid = false;
+    public Vector3 GridCenter;
+    public Vector3 GridExtents = new Vector3(10, 10, 10);
+    public Vector3Int GridResolution = new Vector3Int(2, 2, 2);
+    public Color GridPreviewColor = Color.green;
+
+    void Start()
     {
-        public List<GameObject> CombineParents = new List<GameObject>();
+        Combine();
+    }
 
-        [Header("Grid parameters")] public bool UseGrid = false;
-        public Vector3 GridCenter;
-        public Vector3 GridExtents = new Vector3(10, 10, 10);
-        public Vector3Int GridResolution = new Vector3Int(2, 2, 2);
-        public Color GridPreviewColor = Color.green;
-
-        void Start()
+    public void Combine()
+    {
+        List<MeshRenderer> validRenderers = new List<MeshRenderer>();
+        foreach (GameObject combineParent in CombineParents)
         {
-            Combine();
+            validRenderers.AddRange(combineParent.GetComponentsInChildren<MeshRenderer>());
         }
 
-        public void Combine()
+        if (UseGrid)
         {
-            List<MeshRenderer> validRenderers = new List<MeshRenderer>();
-            foreach (GameObject combineParent in CombineParents)
+            for (int i = 0; i < GetGridCellCount(); i++)
             {
-                validRenderers.AddRange(combineParent.GetComponentsInChildren<MeshRenderer>());
-            }
-
-            if (UseGrid)
-            {
-                for (int i = 0; i < GetGridCellCount(); i++)
+                if (GetGridCellBounds(i, out Bounds bounds))
                 {
-                    if (GetGridCellBounds(i, out Bounds bounds))
-                    {
-                        CombineAllInBounds(bounds, validRenderers);
-                    }
+                    CombineAllInBounds(bounds, validRenderers);
                 }
             }
-            else
+        }
+        else
+        {
+            MeshCombineUtility.Combine(validRenderers,
+                MeshCombineUtility.RendererDisposeMethod.DestroyRendererAndFilter, "Level_Combined");
+        }
+    }
+
+    void CombineAllInBounds(Bounds bounds, List<MeshRenderer> validRenderers)
+    {
+        List<MeshRenderer> renderersForThisCell = new List<MeshRenderer>();
+
+        for (int i = validRenderers.Count - 1; i >= 0; i--)
+        {
+            MeshRenderer m = validRenderers[i];
+            if (bounds.Intersects(m.bounds))
             {
-                MeshCombineUtility.Combine(validRenderers,
-                    MeshCombineUtility.RendererDisposeMethod.DestroyRendererAndFilter, "Level_Combined");
+                renderersForThisCell.Add(m);
+                validRenderers.Remove(m);
             }
         }
 
-        void CombineAllInBounds(Bounds bounds, List<MeshRenderer> validRenderers)
+        if (renderersForThisCell.Count > 0)
         {
-            List<MeshRenderer> renderersForThisCell = new List<MeshRenderer>();
+            MeshCombineUtility.Combine(renderersForThisCell,
+                MeshCombineUtility.RendererDisposeMethod.DestroyRendererAndFilter, "Level_Combined");
+        }
+    }
 
-            for (int i = validRenderers.Count - 1; i >= 0; i--)
+    int GetGridCellCount()
+    {
+        return GridResolution.x * GridResolution.y * GridResolution.z;
+    }
+
+    public bool GetGridCellBounds(int index, out Bounds bounds)
+    {
+        bounds = default;
+        if (index < 0 || index >= GetGridCellCount())
+            return false;
+
+        int xCoord = index / (GridResolution.y * GridResolution.z);
+        int yCoord = (index / GridResolution.z) % GridResolution.y;
+        int zCoord = index % GridResolution.z;
+
+        Vector3 gridBottomCorner = GridCenter - (GridExtents * 0.5f);
+        Vector3 cellSize = new Vector3(GridExtents.x / (float) GridResolution.x,
+            GridExtents.y / (float) GridResolution.y, GridExtents.z / (float) GridResolution.z);
+        Vector3 cellCenter = gridBottomCorner + (new Vector3((xCoord * cellSize.x) + (cellSize.x * 0.5f),
+            (yCoord * cellSize.y) + (cellSize.y * 0.5f),
+            (zCoord * cellSize.z) + (cellSize.z * 0.5f)));
+
+        bounds.center = cellCenter;
+        bounds.size = cellSize;
+
+        return true;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (UseGrid)
+        {
+            Gizmos.color = GridPreviewColor;
+
+            for (int i = 0; i < GetGridCellCount(); i++)
             {
-                MeshRenderer m = validRenderers[i];
-                if (bounds.Intersects(m.bounds))
+                if (GetGridCellBounds(i, out Bounds bounds))
                 {
-                    renderersForThisCell.Add(m);
-                    validRenderers.Remove(m);
-                }
-            }
-
-            if (renderersForThisCell.Count > 0)
-            {
-                MeshCombineUtility.Combine(renderersForThisCell,
-                    MeshCombineUtility.RendererDisposeMethod.DestroyRendererAndFilter, "Level_Combined");
-            }
-        }
-
-        int GetGridCellCount()
-        {
-            return GridResolution.x * GridResolution.y * GridResolution.z;
-        }
-
-        public bool GetGridCellBounds(int index, out Bounds bounds)
-        {
-            bounds = default;
-            if (index < 0 || index >= GetGridCellCount())
-                return false;
-
-            int xCoord = index / (GridResolution.y * GridResolution.z);
-            int yCoord = (index / GridResolution.z) % GridResolution.y;
-            int zCoord = index % GridResolution.z;
-
-            Vector3 gridBottomCorner = GridCenter - (GridExtents * 0.5f);
-            Vector3 cellSize = new Vector3(GridExtents.x / (float) GridResolution.x,
-                GridExtents.y / (float) GridResolution.y, GridExtents.z / (float) GridResolution.z);
-            Vector3 cellCenter = gridBottomCorner + (new Vector3((xCoord * cellSize.x) + (cellSize.x * 0.5f),
-                (yCoord * cellSize.y) + (cellSize.y * 0.5f),
-                (zCoord * cellSize.z) + (cellSize.z * 0.5f)));
-
-            bounds.center = cellCenter;
-            bounds.size = cellSize;
-
-            return true;
-        }
-
-        void OnDrawGizmosSelected()
-        {
-            if (UseGrid)
-            {
-                Gizmos.color = GridPreviewColor;
-
-                for (int i = 0; i < GetGridCellCount(); i++)
-                {
-                    if (GetGridCellBounds(i, out Bounds bounds))
-                    {
-                        Gizmos.DrawWireCube(bounds.center, bounds.size);
-                    }
+                    Gizmos.DrawWireCube(bounds.center, bounds.size);
                 }
             }
         }

@@ -4,73 +4,71 @@ using UnityEditor;
 using UnityEngine.AI;
 using Unity.AI.Navigation;
 
-namespace Unity.Tutorials
+
+/// <summary>
+/// Implement your Tutorial callbacks here.
+/// </summary>
+public class TutorialCallbacks : ScriptableObject
 {
-    /// <summary>
-    /// Implement your Tutorial callbacks here.
-    /// </summary>
-    public class TutorialCallbacks : ScriptableObject
+    public FutureObjectReference futureRoomInstance = default;
+    public FutureObjectReference futureBotInstance = default;
+    UnityEngine.AI.NavMeshSurface navMeshSurface = default;
+
+    public bool NavMeshIsBuilt()
     {
-        public FutureObjectReference futureRoomInstance = default;
-        public FutureObjectReference futureBotInstance = default;
-        NavMeshSurface navMeshSurface = default;
+        return navMeshSurface.navMeshData != null;
+    }
 
-        public bool NavMeshIsBuilt()
+    public void ClearAllNavMeshes()
+    {
+        if (!navMeshSurface)
         {
-            return navMeshSurface.navMeshData != null;
+            navMeshSurface = FindFirstObjectByType<UnityEngine.AI.NavMeshSurface>();
         }
 
-        public void ClearAllNavMeshes()
-        {
-            if (!navMeshSurface)
-            {
-                navMeshSurface = FindFirstObjectByType<NavMeshSurface>();
-            }
-            
-            NavMesh.RemoveAllNavMeshData();
-            navMeshSurface.navMeshData = null;
-        }
+        NavMesh.RemoveAllNavMeshData();
+        navMeshSurface.navMeshData = null;
+    }
 
-        /// <summary>
-        /// Keeps the Room selected during a tutorial. 
-        /// </summary>
-        public void KeepRoomSelected()
-        {
-            SelectSpawnedGameObject(futureRoomInstance);
-        }
+    /// <summary>
+    /// Keeps the Room selected during a tutorial. 
+    /// </summary>
+    public void KeepRoomSelected()
+    {
+        SelectSpawnedGameObject(futureRoomInstance);
+    }
 
-        /// <summary>
-        /// Keeps the Room selected during a tutorial. 
-        /// </summary>
-        public void KeepBotSelected()
-        {
-            SelectSpawnedGameObject(futureBotInstance);
-        }
+    /// <summary>
+    /// Keeps the Room selected during a tutorial. 
+    /// </summary>
+    public void KeepBotSelected()
+    {
+        SelectSpawnedGameObject(futureBotInstance);
+    }
 
 
-        /// <summary>
-        /// Selects a GameObject in the scene, marking it as the active object for selection
-        /// </summary>
-        /// <param name="futureObjectReference"></param>
-        public void SelectSpawnedGameObject(FutureObjectReference futureObjectReference)
-        {
-            if (futureObjectReference.SceneObjectReference == null) { return; }
-            Selection.activeObject = futureObjectReference.SceneObjectReference.ReferencedObjectAsGameObject;
-        }
+    /// <summary>
+    /// Selects a GameObject in the scene, marking it as the active object for selection
+    /// </summary>
+    /// <param name="futureObjectReference"></param>
+    public void SelectSpawnedGameObject(FutureObjectReference futureObjectReference)
+    {
+        if (futureObjectReference.SceneObjectReference == null) { return; }
+        Selection.activeObject = futureObjectReference.SceneObjectReference.ReferencedObjectAsGameObject;
+    }
 
-        public void SelectMoveTool()
-        {
-            Tools.current = Tool.Move;
-        }
+    public void SelectMoveTool()
+    {
+        Tools.current = Tool.Move;
+    }
 
-        public void SelectRotateTool()
-        {
-            Tools.current = Tool.Rotate;
-        }
+    public void SelectRotateTool()
+    {
+        Tools.current = Tool.Rotate;
+    }
 
-        public void StartTutorial(Tutorial tutorial)
-        {
-            TutorialWindowUtils.StartTutorial(tutorial);
-        }
+    public void StartTutorial(Tutorial tutorial)
+    {
+        TutorialWindowUtils.StartTutorial(tutorial);
     }
 }

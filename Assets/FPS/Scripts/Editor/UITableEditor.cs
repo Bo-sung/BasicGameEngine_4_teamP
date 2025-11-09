@@ -2,22 +2,17 @@ using Unity.FPS.UI;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity.FPS.EditorExt
+[CustomEditor(typeof(UITable), true)]
+public class UITableEditor : Editor
 {
-    // The Editor for the UITable component to add an Update button
-
-    [CustomEditor(typeof(UITable), true)]
-    public class UITableEditor : Editor
+    public override void OnInspectorGUI()
     {
-        public override void OnInspectorGUI()
-        {
-            UITable myTarget = (UITable)target;
-            DrawDefaultInspector();
+        UITable myTarget = (UITable)target;
+        DrawDefaultInspector();
 
-            if (GUILayout.Button("Update"))
-            {
-                myTarget.UpdateTable(null);
-            }
+        if (GUILayout.Button("Update"))
+        {
+            myTarget.UpdateTable(null);
         }
     }
 }
