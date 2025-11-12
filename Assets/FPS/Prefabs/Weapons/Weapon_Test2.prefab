@@ -75,7 +75,7 @@ GameObject:
   - component: {fileID: 2225486910712267856}
   - component: {fileID: 8090847488450120274}
   - component: {fileID: 4559990651846262897}
-  - component: {fileID: 7143411444421060979}
+  - component: {fileID: 8185853805219453939}
   m_Layer: 0
   m_Name: Weapon_Test2
   m_TagString: Untagged
@@ -243,7 +243,7 @@ MonoBehaviour:
   ContinuousShootStartSfx: {fileID: 0}
   ContinuousShootLoopSfx: {fileID: 0}
   ContinuousShootEndSfx: {fileID: 0}
---- !u!114 &7143411444421060979
+--- !u!114 &8185853805219453939
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -252,27 +252,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 2225486910712267859}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed851aae35f159240bd220d6f186066c, type: 3}
+  m_Script: {fileID: 11500000, guid: 54b1f6bc7df53594aaa1d78f01c693b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   reloadType: 0
   maxAmmo: 50
   startingAmmo: 50
-  maxCarriedAmmo: 100
-  startingCarriedAmmo: 100
+  maxCarriedAmmo: 150
+  startingCarriedAmmo: 150
   reloadTime: 3
-  emptyReloadTime: 3
+  emptyReloadTime: 4
   reloadStartSound: {fileID: 0}
   reloadCompleteSound: {fileID: 0}
   ammoConsumeSound: {fileID: 0}
   currentAmmo: 0
   carriedAmmo: 0
-  beltChainLength: 100
-  beltReloadTime: 5
-  beltChangeAnimationTime: 2
-  maxContinuousShots: 50
-  overheatCooldownTime: 3
-  jamProbability: 0.02
+  replaceEntireMagazine: 0
+  canCancelReload: 1
+  allowTacticalReload: 1
+  reloadAnimator: {fileID: 0}
+  reloadTrigger: Reload
+  emptyReloadTrigger: EmptyReload
+  magazineDropPrefab: {fileID: 0}
+  magazineDropPoint: {fileID: 0}
 --- !u!1 &8088409166493606719
 GameObject:
   m_ObjectHideFlags: 0

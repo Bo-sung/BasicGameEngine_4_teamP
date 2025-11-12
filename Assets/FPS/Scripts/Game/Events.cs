@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // The Game Events used across the Game.
 // Anytime there is a need for a new event, it should be added here.
@@ -24,6 +24,8 @@ public class ObjectiveUpdateEvent : GameEvent
     public bool IsComplete;
     public string NotificationText;
 }
+
+public class StageStart: GameEvent { }
 
 public class AllObjectivesCompletedEvent : GameEvent { }
 

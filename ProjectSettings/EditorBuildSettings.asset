@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/FPS/Scenes/MainScene.unity
     guid: d794a2ef8ba31d847ad3c19d03e2ddb9
+  - enabled: 1
+    path: Assets/FPS/Scenes/MainScene2.unity
+    guid: 612c7479054f5174583266cc3096c97d
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: df6565090afd47b41828e9292290f074, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: c99239f6cc504e64282d2ff8eaec0f8d, type: 3}
