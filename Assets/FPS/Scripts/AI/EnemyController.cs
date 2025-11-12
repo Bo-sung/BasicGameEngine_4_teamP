@@ -9,6 +9,14 @@ namespace Unity.FPS.AI
     [RequireComponent(typeof(Health), typeof(Actor), typeof(NavMeshAgent))]
     public class EnemyController : MonoBehaviour
     {
+        public enum EnemyType
+        {
+            Normal,
+            Boss
+        }
+
+
+
         [System.Serializable]
         public struct RendererIndexData
         {

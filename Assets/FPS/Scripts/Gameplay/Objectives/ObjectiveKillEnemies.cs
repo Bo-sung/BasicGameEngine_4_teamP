@@ -22,44 +22,33 @@ namespace Unity.FPS.Gameplay
 
             EventManager.AddListener<EnemyKillEvent>(OnEnemyKilled);
 
-            // set a title and description specific for this type of objective, if it hasn't one
-            if (string.IsNullOrEmpty(Title))
-                Title = "Eliminate " + (MustKillAllEnemies ? "all the" : KillsToCompleteObjective.ToString()) +
-                        " enemies";
+            // Chỉ tính enemy thường, bỏ boss("Enemy"가 붙은 태그만 찾습니다.)
+            var allEnemies = GameObject.FindGameObjectsWithTag("Enemy"); 
+            KillsToCompleteObjective = allEnemies.Length;
 
-            if (string.IsNullOrEmpty(Description))
-                Description = GetUpdatedCounterAmount();
+            // set a title và description
+            Title = string.IsNullOrEmpty(Title) 
+                ? $"Eliminate {KillsToCompleteObjective} enemies" 
+                : Title;
+
+            Description = GetUpdatedCounterAmount();
         }
 
         void OnEnemyKilled(EnemyKillEvent evt)
         {
-            if (IsCompleted)
-                return;
+            if (evt.Enemy.CompareTag("Boss")) return; // bỏ qua boss(보스 트그 빼다)
+            if (IsCompleted) return;
 
             m_KillTotal++;
 
-            if (MustKillAllEnemies)
-                KillsToCompleteObjective = evt.RemainingEnemyCount + m_KillTotal;
+            int targetRemaining = MustKillAllEnemies ? KillsToCompleteObjective - m_KillTotal : KillsToCompleteObjective - m_KillTotal;
 
-            int targetRemaining = MustKillAllEnemies ? evt.RemainingEnemyCount : KillsToCompleteObjective - m_KillTotal;
-
-            // update the objective text according to how many enemies remain to kill
-            if (targetRemaining == 0)
-            {
-                CompleteObjective(string.Empty, GetUpdatedCounterAmount(), "Objective complete : " + Title);
-            }
-            else if (targetRemaining == 1)
-            {
-                string notificationText = NotificationEnemiesRemainingThreshold >= targetRemaining
-                    ? "One enemy left"
-                    : string.Empty;
-                UpdateObjective(string.Empty, GetUpdatedCounterAmount(), notificationText);
-            }
+            if (targetRemaining <= 0)
+                CompleteObjective(string.Empty, GetUpdatedCounterAmount(), $"Objective complete: {Title}");
             else
             {
-                // create a notification text if needed, if it stays empty, the notification will not be created
                 string notificationText = NotificationEnemiesRemainingThreshold >= targetRemaining
-                    ? targetRemaining + " enemies to kill left"
+                    ? $"{targetRemaining} enemies left"
                     : string.Empty;
 
                 UpdateObjective(string.Empty, GetUpdatedCounterAmount(), notificationText);

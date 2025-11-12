@@ -1,40 +1,66 @@
-using UnityEngine;
 using Unity.FPS.Game;
+using UnityEngine;
 
 namespace Unity.FPS.Gameplay
 {
     public class ObjectiveBossKill : Objective
     {
-        [Tooltip("여기 Boss 넣습니다")]
-        public GameObject Boss;
-        
-        bool m_BossDead = false;
+        [Tooltip("Boss object reference (optional)")]
+        public GameObject BossReference;
+
+        [Tooltip("Tag used to identify the boss if BossReference is not assigned")]
+        public string BossTag = "Boss";
+
+        bool m_IsCompleted = false;
 
         protected override void Start()
         {
             base.Start();
-
-            if (string.IsNullOrEmpty(Title))
-                Title = "Defeat the Boss";
-
-            if (string.IsNullOrEmpty(Description))
-                Description = "Eliminate the final boss to complete the mission.";
+            Title = string.IsNullOrEmpty(Title) ? "Defeat the Boss" : Title;
+            Description = "Boss is alive";
+            EventManager.AddListener<EnemyKillEvent>(OnEnemyKilled);
         }
 
-        void Update()
+        void OnEnemyKilled(EnemyKillEvent evt)
         {
-            if (IsCompleted)
-                return;
+            if (m_IsCompleted) return;
 
-            if (Boss == null)
-                return; // 지금 보스가 없으면 패스
-
-            var bossHealth = Boss.GetComponent<Health>();
-            if (bossHealth != null && bossHealth.CurrentHealth <= 0 && !m_BossDead)
+            // Kiểm tra nếu enemy vừa chết là boss (죽은Enemy 검사---> 나머지 보스)
+            if (BossReference != null)
             {
-                m_BossDead = true;
-                CompleteObjective("", "Boss defeated!", "Mission complete!");
+                if (evt.Enemy != BossReference) return;
             }
+            else
+            {
+                if (!evt.Enemy.CompareTag(BossTag)) return;
+            }
+
+            CompleteBossObjective();
+        }
+
+        void CompleteBossObjective()
+        {
+            m_IsCompleted = true;
+            Debug.Log("[BossDefeatObjective] Boss defeated!");
+
+            // Cập nhật HUD(HUD 업데이드)
+            UpdateObjective(string.Empty, "Boss defeated!", "Boss defeated!");
+
+            // Tạo event hiển thị thông báo(이벤트 message)
+            DisplayMessageEvent msg = Events.DisplayMessageEvent;
+            msg.Message = "Boss defeated! Mission complete!";
+            msg.DelayBeforeDisplay = 0f;
+            EventManager.Broadcast(msg);
+
+            // Nếu muốn trigger end game chỉ khi boss chết (보스 죽을때 endgame 불어)
+            EventManager.Broadcast(Events.AllObjectivesCompletedEvent);
+            
+            
+        }
+
+        void OnDestroy()
+        {
+            EventManager.RemoveListener<EnemyKillEvent>(OnEnemyKilled);
         }
     }
 }
