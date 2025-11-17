@@ -279,6 +279,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BossTurret
       objectReference: {fileID: 0}
+    - target: {fileID: 2015434656898269652, guid: 6799c857df102004b8ce80d842176e92, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     - target: {fileID: 2015434656898269656, guid: 6799c857df102004b8ce80d842176e92, type: 3}
       propertyPath: m_LocalPosition.x
       value: 54.5
@@ -1987,7 +1991,7 @@ GameObject:
   - component: {fileID: 2729281213105387549}
   m_Layer: 0
   m_Name: Patrol
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3202,7 +3206,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 298744117520805562, guid: 761cdc9e4e883334cbdcea062d0befa7, type: 3}
       propertyPath: StartingWeapons.Array.size
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 298744117520805562, guid: 761cdc9e4e883334cbdcea062d0befa7, type: 3}
       propertyPath: 'StartingWeapons.Array.data[0]'
@@ -3215,7 +3219,11 @@ PrefabInstance:
     - target: {fileID: 298744117520805562, guid: 761cdc9e4e883334cbdcea062d0befa7, type: 3}
       propertyPath: 'StartingWeapons.Array.data[2]'
       value: 
-      objectReference: {fileID: 8323776800172828795, guid: b318fabc73446b746a1005cede0c4ceb, type: 3}
+      objectReference: {fileID: 4234236825401986320, guid: c54cc32015c56414e84752b74122cecc, type: 3}
+    - target: {fileID: 298744117520805562, guid: 761cdc9e4e883334cbdcea062d0befa7, type: 3}
+      propertyPath: 'StartingWeapons.Array.data[3]'
+      value: 
+      objectReference: {fileID: 4234236825401986320, guid: 0cb10f1bdbdf0d242933d95f76c809c0, type: 3}
     - target: {fileID: 814417836257332542, guid: 761cdc9e4e883334cbdcea062d0befa7, type: 3}
       propertyPath: gravityDownForce
       value: 20
@@ -3777,6 +3785,10 @@ PrefabInstance:
     - target: {fileID: 2015434656898269652, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2015434656898269652, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 2015434656898269656, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
       propertyPath: m_RootOrder

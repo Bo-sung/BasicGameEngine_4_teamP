@@ -208,7 +208,7 @@ GameObject:
   - component: {fileID: 3444686158330356048}
   m_Layer: 0
   m_Name: Enemy_Turret
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -334,13 +334,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4cb5371dba09ee46806cbe0c2aa2c9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TurretPivot: {fileID: 7886326314632062837}
-  TurretAimPoint: {fileID: 6571005840976436832}
-  Animator: {fileID: 7886326314639247517}
-  AimRotationSharpness: 5
-  LookAtRotationSharpness: 2.5
-  DetectionFireDelay: 1.1
-  AimingTransitionBlendTime: 1
   RandomHitSparks:
   - {fileID: 5404058045411655592}
   - {fileID: 2032749546541318530}
@@ -349,6 +342,12 @@ MonoBehaviour:
   - {fileID: 7957976818100458430}
   - {fileID: 4008264615443136680}
   OnDetectSfx: {fileID: 8300000, guid: 7fac2ef5c59df1a45985d3eb894e8d47, type: 3}
+  TurretPivot: {fileID: 7886326314632062837}
+  TurretAimPoint: {fileID: 6571005840976436832}
+  AimRotationSharpness: 5
+  LookAtRotationSharpness: 2.5
+  DetectionFireDelay: 1.1
+  AimingTransitionBlendTime: 1
 --- !u!114 &8502097699347725703
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1541,11 +1540,6 @@ Transform:
 --- !u!4 &7886326314632062847 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400002, guid: fad35a70731ab804c975c717ee8862a5, type: 3}
-  m_PrefabInstance: {fileID: 7886326314631937533}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &7886326314639247517 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 9500000, guid: fad35a70731ab804c975c717ee8862a5, type: 3}
   m_PrefabInstance: {fileID: 7886326314631937533}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8484798774588107665

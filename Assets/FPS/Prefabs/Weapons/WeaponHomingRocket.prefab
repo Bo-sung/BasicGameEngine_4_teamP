@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 4234236825401986320}
   - component: {fileID: 825973294460396894}
   m_Layer: 10
-  m_Name: WeaponRocket
+  m_Name: WeaponHomingRocket
   m_TagString: Untagged
   m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -190,7 +190,7 @@ MonoBehaviour:
   WeaponRoot: {fileID: 1505447205160222267}
   WeaponMuzzle: {fileID: 8334323006752503713}
   ShootType: 0
-  ProjectilePrefab: {fileID: 5542020336735652036, guid: 11de715c395f08d42ac9e1f6db32e1ba, type: 3}
+  ProjectilePrefab: {fileID: 6482925670019448990, guid: 62234c871119f804390c20aa76dec05b, type: 3}
   DelayBetweenShots: 0.2
   BulletSpreadAngle: 7
   BulletsPerShot: 1

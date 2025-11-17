@@ -124,8 +124,8 @@ GameObject:
   - component: {fileID: 8210454466962951457}
   - component: {fileID: 2995543354997265850}
   m_Layer: 0
-  m_Name: Enemy_HoverBot 1
-  m_TagString: Untagged
+  m_Name: Enemy_EOB
+  m_TagString: Enemy
   m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

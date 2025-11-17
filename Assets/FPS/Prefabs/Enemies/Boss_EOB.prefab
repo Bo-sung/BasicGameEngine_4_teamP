@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 1354607791543640949}
   m_Layer: 0
   m_Name: Boss_EOB
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -380,23 +380,9 @@ MonoBehaviour:
   IsBoss: 1
   BossHealthMultiplier: 5
   SlashRange: 3
-  SlashSpreadAngle: 120
-  SlashDamage: 25
-  SlashCooldown: 2
-  SlashPatternName: Sector
-  ChargeWidth: 2
-  ChargeLength: 10
-  ChargeDamage: 40
-  ChargeCooldown: 4
+  ChargeRange: 8
   ChargeDistance: 8
   ChargeDuration: 1
-  ChargePatternName: Box
-  MinionSpawnHealthThreshold: 0.5
-  MinionPrefab: {fileID: 2015434656898269652, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
-  MinionsPerSpawn: 3
-  MinionSpawnPoints: []
-  MinionSpawnSFX: {fileID: 0}
-  PatternSpawner: {fileID: 0}
   BossDeathVFX: {fileID: 0}
   BossDeathSFX: {fileID: 0}
   BossDeathExplosionRadius: 10
