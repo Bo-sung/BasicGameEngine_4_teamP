@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3659995153115176982}
   - component: {fileID: 8924682559891268397}
   m_Layer: 0
-  m_Name: Projectile_Shotgun
+  m_Name: Projectile_Sniper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8402172112652589804}
@@ -49,20 +49,20 @@ MonoBehaviour:
   Root: {fileID: 3659995153115176982}
   Tip: {fileID: 1135791333161367127}
   MaxLifeTime: 5
-  ImpactVfx: {fileID: 7655095426451682942, guid: 358eca6adc32a89459c54b6b62d9c825, type: 3}
+  ImpactVfx: {fileID: 7655095426451682942, guid: 4d48b487f11e62940a978c7c0c0cbcb4, type: 3}
   ImpactVfxLifetime: 5
   ImpactVfxSpawnOffset: 0.1
   ImpactSfxClip: {fileID: 0}
   HittableLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  Speed: 150
-  GravityDownAcceleration: 20
-  TrajectoryCorrectionDistance: -1
+  Speed: 500
+  GravityDownAcceleration: 0
+  TrajectoryCorrectionDistance: 5
   InheritWeaponVelocity: 0
-  Damage: 7
+  Damage: 50
   AreaOfDamage: {fileID: 0}
-  RadiusColor: {r: 0, g: 1, b: 1, a: 1}
+  RadiusColor: {r: 0.9988458, g: 1, b: 0.028301716, a: 1}
   HasExplosion: 0
   ExplosionRadius: 0
 --- !u!1 &5564024855854763701
@@ -161,7 +161,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a7baa8fdcb831b44d87d70b1e6941b39, type: 2}
+  - {fileID: 2100000, guid: 530af3a8082ffb14897ac6b74259b8a1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

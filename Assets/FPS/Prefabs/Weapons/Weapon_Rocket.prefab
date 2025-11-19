@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 4234236825401986320}
   - component: {fileID: 825973294460396894}
   m_Layer: 10
-  m_Name: WeaponRocket
+  m_Name: Weapon_Rocket
   m_TagString: Untagged
   m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
