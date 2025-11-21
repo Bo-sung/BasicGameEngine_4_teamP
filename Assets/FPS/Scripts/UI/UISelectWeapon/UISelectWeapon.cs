@@ -9,13 +9,20 @@ public class SelectWeaponPresenter : UISelectWeapon.IPresenter
     UISelectWeapon.Data data;
 
     private System.Action onStageStarted;
+    private WeaponArmory weaponArmory;
+    private PlayerStatusManager playerStatusManager;
+
+    private int rewardCount;
+    private HashSet<int> rewardedList = new HashSet<int>();
 
     public Action OnStageStarted { get => onStageStarted; set => onStageStarted = value; }
 
-    public SelectWeaponPresenter()
+    public SelectWeaponPresenter(WeaponArmory weaponArmory, PlayerStatusManager playerStatusManager, int rewardCount)
     {
+        this.weaponArmory = weaponArmory;
+        this.rewardCount = rewardCount;
+        this.playerStatusManager = playerStatusManager;
         AddEvent();
-
     }
 
     void AddEvent()
@@ -30,12 +37,49 @@ public class SelectWeaponPresenter : UISelectWeapon.IPresenter
 
     public UISelectWeapon.Data GetData()
     {
-        throw new System.NotImplementedException();
+        UISelectWeapon.Data result = new UISelectWeapon.Data();
+        result.selectDataList = new List<UISelectCard.Data>();
+
+        List<Weapon> weapons = weaponArmory.Prefabs;
+
+        List<int> rewardIndexList = new List<int>();
+        int index = 0;
+        while (index < rewardCount)
+        {
+            int rewardIndex = UnityEngine.Random.Range(0, weaponArmory.Prefabs.Count);
+            // 이미 얻은거 제외
+            if (rewardedList.Contains(rewardIndex))
+                continue;
+            rewardIndexList.Add(rewardIndex);
+            index++;
+        }
+
+        foreach (var rewardIndex in rewardIndexList)
+        {
+            var reward = weapons[rewardIndex]; 
+            UISelectCard.Data cardData = new UISelectCard.Data();
+            cardData.ID = rewardIndex;
+            cardData.weaponName = reward.WeaponName;
+            cardData.iconImage = reward.WeaponIcon;
+            cardData.textList = new List<UI_InfScrollItem_Text.Data>();
+            foreach(var desc in reward.weaponDescriptions)
+            {
+                cardData.textList.Add(new UI_InfScrollItem_Text.Data() { text = desc });
+            }
+            result.selectDataList.Add(cardData);
+        }
+
+        return result;
     }
 
     public void OnCardSelected(int cardID)
     {
-        throw new System.NotImplementedException();
+        if (cardID > weaponArmory.Prefabs.Count || cardID < 0)
+        {
+            return;
+        }
+        rewardedList.Add(cardID);
+        playerStatusManager.AddWeapon(weaponArmory.Prefabs[cardID]);
     }
 }
 
@@ -55,6 +99,10 @@ public class UISelectWeapon : MonoBehaviour
         void OnCardSelected(int cardID);
         Data GetData();
     }
+    [SerializeField]
+    WeaponArmory weaponArmory;
+    [SerializeField]
+    PlayerStatusManager playerStatusManager;
 
     [SerializeField]
     TextMeshProUGUI m_titleText;
@@ -64,6 +112,9 @@ public class UISelectWeapon : MonoBehaviour
 
     [SerializeField]
     GameObject m_container;
+
+    [SerializeField]
+    int rewardCount = 3;
 
     [SerializeField]
     List<UISelectCard> selectCardList = new List<UISelectCard>();
@@ -78,7 +129,7 @@ public class UISelectWeapon : MonoBehaviour
 
     private void Awake()
     {
-        presenter = new SelectWeaponPresenter();
+        presenter = new SelectWeaponPresenter(weaponArmory, playerStatusManager, rewardCount);
         SetData(presenter.GetData());
     }
 

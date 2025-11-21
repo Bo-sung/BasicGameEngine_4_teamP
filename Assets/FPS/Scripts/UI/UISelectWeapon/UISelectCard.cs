@@ -7,6 +7,8 @@ public class UISelectCard : MonoBehaviour
     public class Data : UIScrollableTexts.Data
     {
         public int ID = 0;
+        public string weaponName;
+        public Sprite iconImage;
     }
 
     [SerializeField]
@@ -28,6 +30,8 @@ public class UISelectCard : MonoBehaviour
     public void SetData(Data data)
     {
         _id = data.ID;
+        icon.sprite = data.iconImage;
+        titleText.text = data.weaponName;
         status.SetData(data);
     }
 
