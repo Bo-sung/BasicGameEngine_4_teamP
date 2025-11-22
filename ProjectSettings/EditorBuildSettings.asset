@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/FPS/Scenes/MainScene.unity
     guid: d794a2ef8ba31d847ad3c19d03e2ddb9
   - enabled: 1
+    path: Assets/FPS/Scenes/RewardScene.unity
+    guid: 5feb2ffa0a0075b4398de2feb91264cb
+  - enabled: 1
     path: Assets/FPS/Scenes/MainScene2.unity
     guid: 612c7479054f5174583266cc3096c97d
   m_configObjects:

@@ -103,6 +103,13 @@ namespace Unity.FPS.Gameplay
         WeaponSwitchState m_WeaponSwitchState;
         int m_WeaponSwitchNewWeaponIndex;
 
+        void Awake()
+        {
+            GameObject go_stageManager = GameObject.Find("StageManager");
+            var stagemanager = go_stageManager.GetComponent<StageManager>();
+            StartingWeapons = stagemanager.PlayerWeapons;
+        }
+
         void Start()
         {
             ActiveWeaponIndex = -1;

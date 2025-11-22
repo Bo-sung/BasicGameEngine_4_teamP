@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SelectWeaponPresenter : UISelectWeapon.IPresenter
 {
@@ -10,29 +11,16 @@ public class SelectWeaponPresenter : UISelectWeapon.IPresenter
 
     private System.Action onStageStarted;
     private WeaponArmory weaponArmory;
-    private PlayerStatusManager playerStatusManager;
+    private StageManager stageManager;
 
     private int rewardCount;
     private HashSet<int> rewardedList = new HashSet<int>();
 
-    public Action OnStageStarted { get => onStageStarted; set => onStageStarted = value; }
-
-    public SelectWeaponPresenter(WeaponArmory weaponArmory, PlayerStatusManager playerStatusManager, int rewardCount)
+    public SelectWeaponPresenter(WeaponArmory weaponArmory, StageManager playerStatusManager, int rewardCount)
     {
         this.weaponArmory = weaponArmory;
         this.rewardCount = rewardCount;
-        this.playerStatusManager = playerStatusManager;
-        AddEvent();
-    }
-
-    void AddEvent()
-    {
-        EventManager.AddListener<StageStart>(OnStageStart);
-    }
-
-    private void OnStageStart(StageStart start)
-    {
-        onStageStarted?.Invoke();
+        this.stageManager = playerStatusManager;
     }
 
     public UISelectWeapon.Data GetData()
@@ -79,7 +67,12 @@ public class SelectWeaponPresenter : UISelectWeapon.IPresenter
             return;
         }
         rewardedList.Add(cardID);
-        playerStatusManager.AddWeapon(weaponArmory.Prefabs[cardID]);
+        stageManager.AddWeapon(weaponArmory.Prefabs[cardID]);
+    }
+
+    public void LoadNextStage()
+    {
+        stageManager.NextStage();
     }
 }
 
@@ -94,15 +87,10 @@ public class UISelectWeapon : MonoBehaviour
 
     public interface IPresenter
     {
-        Action OnStageStarted { get; set; }
-
         void OnCardSelected(int cardID);
         Data GetData();
+        void LoadNextStage();
     }
-    [SerializeField]
-    WeaponArmory weaponArmory;
-    [SerializeField]
-    PlayerStatusManager playerStatusManager;
 
     [SerializeField]
     TextMeshProUGUI m_titleText;
@@ -124,17 +112,25 @@ public class UISelectWeapon : MonoBehaviour
 
     IPresenter presenter;
 
-    // 카드 선택 이벤트
-    public System.Action<int> OnCardSelected;
-
-    private void Awake()
+    public void SetData(SelectWeaponPresenter presenter)
     {
-        presenter = new SelectWeaponPresenter(weaponArmory, playerStatusManager, rewardCount);
-        SetData(presenter.GetData());
+        this.presenter = presenter;
+        Refresh();
     }
 
-    void SetData(Data data)
+    void OnEnable()
     {
+        Refresh();
+    }
+
+    public void Refresh()
+    {
+        if(presenter == null)
+        {
+            return;
+        }
+        var data = presenter.GetData();
+        ClearAllCards();
         m_titleText.text = data.title;
         List<UISelectCard.Data> cardData = data.selectDataList;
 
@@ -239,11 +235,7 @@ public class UISelectWeapon : MonoBehaviour
         // Presenter에 전달
         presenter?.OnCardSelected(cardID);
 
-        // 외부 이벤트 전달
-        OnCardSelected?.Invoke(cardID);
-
-        // 선택 후 UI 숨기기 또는 추가 처리
-        // HideUI();
+        HideUI();
     }
 
     /// <summary>
@@ -305,6 +297,12 @@ public class UISelectWeapon : MonoBehaviour
                 UnregisterCardEvent(card);
             }
         }
+    }
+
+    void HideUI()
+    {
+        this.transform.gameObject.SetActive(false);
+        presenter.LoadNextStage();
     }
 
     private void OnDestroy()
