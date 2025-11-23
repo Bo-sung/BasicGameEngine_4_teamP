@@ -3,39 +3,76 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SelectWeaponPresenter : UISelectWeapon.IPresenter
 {
     UISelectWeapon.Data data;
 
     private System.Action onStageStarted;
+    private WeaponArmory weaponArmory;
+    private StageManager stageManager;
 
-    public Action OnStageStarted { get => onStageStarted; set => onStageStarted = value; }
+    private int rewardCount;
+    private HashSet<int> rewardedList = new HashSet<int>();
 
-    public SelectWeaponPresenter()
+    public SelectWeaponPresenter(WeaponArmory weaponArmory, StageManager playerStatusManager, int rewardCount)
     {
-        AddEvent();
-
-    }
-
-    void AddEvent()
-    {
-        EventManager.AddListener<StageStart>(OnStageStart);
-    }
-
-    private void OnStageStart(StageStart start)
-    {
-        onStageStarted?.Invoke();
+        this.weaponArmory = weaponArmory;
+        this.rewardCount = rewardCount;
+        this.stageManager = playerStatusManager;
     }
 
     public UISelectWeapon.Data GetData()
     {
-        throw new System.NotImplementedException();
+        UISelectWeapon.Data result = new UISelectWeapon.Data();
+        result.selectDataList = new List<UISelectCard.Data>();
+
+        List<Weapon> weapons = weaponArmory.Prefabs;
+
+        List<int> rewardIndexList = new List<int>();
+        int index = 0;
+        while (index < rewardCount)
+        {
+            int rewardIndex = UnityEngine.Random.Range(0, weaponArmory.Prefabs.Count);
+            // 이미 얻은거 제외
+            if (rewardedList.Contains(rewardIndex))
+                continue;
+            rewardIndexList.Add(rewardIndex);
+            index++;
+        }
+
+        foreach (var rewardIndex in rewardIndexList)
+        {
+            var reward = weapons[rewardIndex]; 
+            UISelectCard.Data cardData = new UISelectCard.Data();
+            cardData.ID = rewardIndex;
+            cardData.weaponName = reward.WeaponName;
+            cardData.iconImage = reward.WeaponIcon;
+            cardData.textList = new List<UI_InfScrollItem_Text.Data>();
+            foreach(var desc in reward.weaponDescriptions)
+            {
+                cardData.textList.Add(new UI_InfScrollItem_Text.Data() { text = desc });
+            }
+            result.selectDataList.Add(cardData);
+        }
+
+        return result;
     }
 
     public void OnCardSelected(int cardID)
     {
-        throw new System.NotImplementedException();
+        if (cardID > weaponArmory.Prefabs.Count || cardID < 0)
+        {
+            return;
+        }
+        rewardedList.Add(cardID);
+        stageManager.AddWeapon(weaponArmory.Prefabs[cardID]);
+    }
+
+    public void LoadNextStage()
+    {
+        stageManager.NextStage();
     }
 }
 
@@ -50,10 +87,9 @@ public class UISelectWeapon : MonoBehaviour
 
     public interface IPresenter
     {
-        Action OnStageStarted { get; set; }
-
         void OnCardSelected(int cardID);
         Data GetData();
+        void LoadNextStage();
     }
 
     [SerializeField]
@@ -66,6 +102,9 @@ public class UISelectWeapon : MonoBehaviour
     GameObject m_container;
 
     [SerializeField]
+    int rewardCount = 3;
+
+    [SerializeField]
     List<UISelectCard> selectCardList = new List<UISelectCard>();
 
     // 오브젝트 풀 (비활성화된 카드들)
@@ -73,17 +112,25 @@ public class UISelectWeapon : MonoBehaviour
 
     IPresenter presenter;
 
-    // 카드 선택 이벤트
-    public System.Action<int> OnCardSelected;
-
-    private void Awake()
+    public void SetData(SelectWeaponPresenter presenter)
     {
-        presenter = new SelectWeaponPresenter();
-        SetData(presenter.GetData());
+        this.presenter = presenter;
+        Refresh();
     }
 
-    void SetData(Data data)
+    void OnEnable()
     {
+        Refresh();
+    }
+
+    public void Refresh()
+    {
+        if(presenter == null)
+        {
+            return;
+        }
+        var data = presenter.GetData();
+        ClearAllCards();
         m_titleText.text = data.title;
         List<UISelectCard.Data> cardData = data.selectDataList;
 
@@ -188,11 +235,7 @@ public class UISelectWeapon : MonoBehaviour
         // Presenter에 전달
         presenter?.OnCardSelected(cardID);
 
-        // 외부 이벤트 전달
-        OnCardSelected?.Invoke(cardID);
-
-        // 선택 후 UI 숨기기 또는 추가 처리
-        // HideUI();
+        HideUI();
     }
 
     /// <summary>
@@ -254,6 +297,12 @@ public class UISelectWeapon : MonoBehaviour
                 UnregisterCardEvent(card);
             }
         }
+    }
+
+    void HideUI()
+    {
+        this.transform.gameObject.SetActive(false);
+        presenter.LoadNextStage();
     }
 
     private void OnDestroy()

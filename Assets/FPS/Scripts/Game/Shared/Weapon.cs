@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -12,6 +12,9 @@ public class Weapon : MonoBehaviour
     [Header("정보")]
     [Tooltip("UI에서 이 무기에 대해 표시될 이름")]
     public string WeaponName;
+
+    [Tooltip("보상 선택지에 표시될 무기 설명")]
+    public string[] weaponDescriptions;
 
     [Tooltip("UI에서 이 무기에 대해 표시될 이미지")]
     public Sprite WeaponIcon;
