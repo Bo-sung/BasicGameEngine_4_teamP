@@ -229,7 +229,7 @@ MonoBehaviour:
   BulletsPerShot: 1
   RecoilForce: 1.5
   AimZoomRatio: 0.5
-  AimOffset: {x: 0, y: 0.268, z: 0.198}
+  AimOffset: {x: 0, y: 0, z: 0.25}
   AutomaticReleaseOnCharged: 0
   MaxChargeDuration: 2
   AmmoUsedOnStartCharge: 1

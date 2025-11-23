@@ -114,7 +114,7 @@ MonoBehaviour:
   HittableLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  Speed: 20
+  Speed: 25
   GravityDownAcceleration: 0
   TrajectoryCorrectionDistance: -1
   InheritWeaponVelocity: 0
@@ -123,8 +123,10 @@ MonoBehaviour:
   RadiusColor: {r: 0, g: 0.2, b: 0.2, a: 0.2}
   HasExplosion: 1
   ExplosionRadius: 5
-  TargetTag: Enemy
-  TurnSpeed: 20
+  targetTag: Enemy
+  turnSpeed: 10
+  detectionAngle: 10
+  detectionRange: 50
 --- !u!114 &1203337828444365110
 MonoBehaviour:
   m_ObjectHideFlags: 0

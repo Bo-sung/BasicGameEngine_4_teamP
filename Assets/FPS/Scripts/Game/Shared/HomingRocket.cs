@@ -4,13 +4,16 @@ using UnityEngine;
 public class HomingRocket : ProjectileStandard
 {
     [Header("Homing Settings")]
-    public string TargetTag = "Enemy";
-    public float TurnSpeed = 20f;
+    public string targetTag = "Enemy";
+    public float turnSpeed = 20f;
+    public float detectionAngle = 45f;
+    public float detectionRange = 50f;
 
     Transform target;
 
     Vector3 m_lastPos;
     Vector3 m_velocity;
+
 
     void Start()
     {
@@ -33,7 +36,7 @@ public class HomingRocket : ProjectileStandard
 
         float speed = m_velocity.magnitude;
 
-        Vector3 newDir = Vector3.Lerp(m_velocity.normalized, dir, TurnSpeed * Time.deltaTime);
+        Vector3 newDir = Vector3.Lerp(m_velocity.normalized, dir, turnSpeed * Time.deltaTime);
 
         m_velocity = newDir.normalized * speed * Time.deltaTime;
 
@@ -44,7 +47,7 @@ public class HomingRocket : ProjectileStandard
 
     void FindTarget()
     {
-        GameObject[] objs = GameObject.FindGameObjectsWithTag(TargetTag);
+        GameObject[] objs = GameObject.FindGameObjectsWithTag(targetTag);
         if (objs.Length == 0)
         {
             target = null;
@@ -56,7 +59,17 @@ public class HomingRocket : ProjectileStandard
 
         foreach (var obj in objs)
         {
-            float dist = Vector3.Distance(transform.position, obj.transform.position);
+            Vector3 toTarget = obj.transform.position - transform.position;
+            float dist = toTarget.magnitude;
+
+            if (dist > detectionRange)
+                continue;
+
+            //각도 제한
+            float angle = Vector3.Angle(transform.forward, toTarget);
+            if (angle > detectionAngle)
+                continue;
+
             if (dist < closest)
             {
                 closest = dist;
