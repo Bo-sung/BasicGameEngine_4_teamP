@@ -172,19 +172,22 @@ public class EnemyController : MonoBehaviour
         m_Health.OnDie += OnDie;
         m_Health.OnDamaged += OnDamaged;
 
-        // 모든 무기 찾기 및 초기화
-        FindAndInitializeAllWeapons();
-        var weapon = GetCurrentWeapon();
-        weapon.ShowWeapon(true);
 
         var detectionModules = GetComponentsInChildren<DetectionModule>();
         DebugUtility.HandleErrorIfNoComponentFound<DetectionModule, EnemyController>(detectionModules.Length, this, gameObject);
         DebugUtility.HandleWarningIfDuplicateObjects<DetectionModule, EnemyController>(detectionModules.Length, this, gameObject);
+
+
         // 탐지 모듈 초기화
         DetectionModule = detectionModules[0];
         DetectionModule.onDetectedTarget += OnDetectedTarget;
         DetectionModule.onLostTarget += OnLostTarget;
         onAttack += DetectionModule.OnAttack;
+
+        // 모든 무기 찾기 및 초기화
+        FindAndInitializeAllWeapons();
+        var weapon = GetCurrentWeapon();
+        weapon.ShowWeapon(true);
 
         var navigationModules = GetComponentsInChildren<NavigationModule>();
         DebugUtility.HandleWarningIfDuplicateObjects<DetectionModule, EnemyController>(detectionModules.Length, this, gameObject);
@@ -494,6 +497,8 @@ public class EnemyController : MonoBehaviour
     void SetCurrentWeapon(int index)
     {
         m_CurrentWeaponIndex = index;
+        if (m_Weapons.Length <= index)
+            return;
         m_CurrentWeapon = m_Weapons[m_CurrentWeaponIndex];
         if (SwapToNextWeapon)
         {
