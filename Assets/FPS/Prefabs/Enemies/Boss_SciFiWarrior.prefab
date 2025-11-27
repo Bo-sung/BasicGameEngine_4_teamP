@@ -1,5 +1,259 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1320982869798264934
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8777594788787862459}
+  - component: {fileID: 5980144899549598899}
+  m_Layer: 0
+  m_Name: LaserRenderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8777594788787862459
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320982869798264934}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8577905820509334461}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!120 &5980144899549598899
+LineRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320982869798264934}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Positions:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 1}
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 1
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 1, g: 0, b: 0, a: 1}
+      key1: {r: 1, g: 0, b: 0, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_ColorSpace: -1
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    textureScale: {x: 1, y: 1}
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_MaskInteraction: 0
+  m_UseWorldSpace: 1
+  m_Loop: 0
+  m_ApplyActiveColorSpace: 1
+--- !u!1 &5341140748537464186
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8577905820509334461}
+  - component: {fileID: 5928595518434975313}
+  - component: {fileID: 2656636569651656903}
+  - component: {fileID: 1267634891772307394}
+  m_Layer: 0
+  m_Name: AttackPatterns
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8577905820509334461
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5341140748537464186}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8777594788787862459}
+  m_Father: {fileID: 5283770525979580021}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5928595518434975313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5341140748537464186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 885a8aec989bd3a48b8d26fd16c3d32d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PatternName: Laser Beam
+  Cooldown: 8
+  Damage: 30
+  BossTransform: {fileID: 5283770525979580021}
+  Target: {fileID: 0}
+  LaserRange: 50
+  LaserWidth: 0.5
+  LaserDuration: 1.5
+  WarningDuration: 2
+  LineTelegraphPrefab: {fileID: 1234567890123456789, guid: eeaa91f790017b646a23088e2da45fab, type: 3}
+  LaserLineRenderer: {fileID: 5980144899549598899}
+  LaserFireSfx: {fileID: 0}
+  LaserChargeSfx: {fileID: 0}
+--- !u!114 &2656636569651656903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5341140748537464186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b68bd3669417c8349a64765adc50c54f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PatternName: Burst Fire
+  Cooldown: 5
+  Damage: 10
+  BossTransform: {fileID: 5283770525979580021}
+  Target: {fileID: 0}
+  FireDuration: 2.5
+  FireRate: 12
+  ProjectilesPerShot: 1
+  SpreadAngle: 60
+  PitchAngle: 10
+  Range: 25
+  WarningDuration: 1.5
+  FanTelegraphPrefab: {fileID: 2234567890123456789, guid: 677266af068fc404c99e839c3310719d, type: 3}
+  ProjectilePrefab: {fileID: 8924682559891268397, guid: 154bfb4989fe16d439e8f3fb7c20b72b, type: 3}
+  MuzzleTransform: {fileID: 5743080685025978550}
+  FireSfx: {fileID: 0}
+--- !u!114 &1267634891772307394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5341140748537464186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbf4f72339deea247960ebbd0a255188, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PatternName: Guided Bombardment
+  Cooldown: 12
+  Damage: 40
+  BossTransform: {fileID: 5283770525979580021}
+  Target: {fileID: 0}
+  BombCount: 6
+  ExplosionRadius: 4
+  ExplosionInterval: 0.2
+  SpreadRadius: 8
+  WarningDuration: 2.5
+  PredictionTime: 1
+  CircleTelegraphPrefab: {fileID: 3234567890123456789, guid: 200ad4873209ca443af85342188f7037, type: 3}
+  ExplosionVfxPrefab: {fileID: 0}
+  ExplosionSfx: {fileID: 0}
+  WarningSfx: {fileID: 0}
 --- !u!1001 &2926923972310204399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8,6 +262,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5283770525979580021}
     m_Modifications:
+    - target: {fileID: 7673487250857332701, guid: c98043d57e0190845b790d7b92990bee, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: 138ae4f0d5f61a44aa24ff66a8a6fe09, type: 2}
     - target: {fileID: 7673487251499248760, guid: c98043d57e0190845b790d7b92990bee, type: 3}
       propertyPath: m_Name
       value: HPCharacter_Model
@@ -132,8 +390,28 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2104015986810675393, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      propertyPath: MaxAmmo
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2104015986810675393, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
       propertyPath: WeaponName
-      value: Boss Assault Rifle
+      value: Boss MachineGun
+      objectReference: {fileID: 0}
+    - target: {fileID: 2104015986810675393, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      propertyPath: AmmoReloadRate
+      value: Infinity
+      objectReference: {fileID: 0}
+    - target: {fileID: 2104015986810675393, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      propertyPath: AmmoReloadDelay
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2104015986810675393, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      propertyPath: ProjectilePrefab
+      value: 
+      objectReference: {fileID: 8924682559891268397, guid: 154bfb4989fe16d439e8f3fb7c20b72b, type: 3}
+    - target: {fileID: 2104015986810675393, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      propertyPath: DelayBetweenShots
+      value: 0.06
       objectReference: {fileID: 0}
     - target: {fileID: 3175718064325614203, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -167,18 +445,28 @@ PrefabInstance:
       propertyPath: Animator
       value: 
       objectReference: {fileID: 4819755570733576242}
+    - target: {fileID: 6809973363424661249, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      propertyPath: AttackRange
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 6809973363424661249, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      propertyPath: DetectionRange
+      value: 40
+      objectReference: {fileID: 0}
     - target: {fileID: 8093968053717355753, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
       propertyPath: m_Name
       value: Weapon_AssaultRifle
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 4752156053906186385, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 7026724581344680704, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 2015434656898269656, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4819755570301079479}
+    - targetCorrespondingSourceObject: {fileID: 2015434656898269656, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8577905820509334461}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2015434656898269652, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
       insertIndex: -1
@@ -216,9 +504,9 @@ MonoBehaviour:
     Max: 0
   IsBoss: 1
   BossHealthMultiplier: 5
-  MinionSpawnHealthThreshold: 0.5
-  MinionPrefab: {fileID: 0}
-  MinionsPerSpawn: 3
+  MinionSpawnHealthThreshold: 0.75
+  MinionPrefab: {fileID: 2015434656898269652, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+  MinionsPerSpawn: 5
   MinionSpawnInterval: 10
   MinionSpawnPoints: []
   MinionSpawnVFX: {fileID: 0}
@@ -227,4 +515,15 @@ MonoBehaviour:
   BossDeathSFX: {fileID: 0}
   BossDeathExplosionRadius: 10
   BossDeathExplosionDamage: 50
+  AttackPatterns:
+  - {fileID: 5928595518434975313}
+  - {fileID: 2656636569651656903}
+  - {fileID: 1267634891772307394}
+  PatternCooldown: 3
+  DisableWeaponDuringPattern: 1
   BossAnimator: {fileID: 4819755570733576242}
+--- !u!4 &5743080685025978550 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2096565386399891227, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+  m_PrefabInstance: {fileID: 5957130257044592557}
+  m_PrefabAsset: {fileID: 0}

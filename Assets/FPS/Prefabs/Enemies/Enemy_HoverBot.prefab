@@ -61,13 +61,13 @@ GameObject:
   m_Component:
   - component: {fileID: 2015434656898269656}
   - component: {fileID: 9087143436424816424}
-  - component: {fileID: 4752156053906186385}
   - component: {fileID: 6370966072896210225}
   - component: {fileID: 3464315327790461765}
   - component: {fileID: 7406548990343174644}
   - component: {fileID: 6449686686394465367}
   - component: {fileID: 797398738606809810}
   - component: {fileID: 1614318205656627459}
+  - component: {fileID: 4161126364194324815}
   m_Layer: 0
   m_Name: Enemy_HoverBot
   m_TagString: Enemy
@@ -157,33 +157,6 @@ MonoBehaviour:
   PathReachingRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   AttackRangeColor: {r: 1, g: 0, b: 0, a: 1}
   DetectionRangeColor: {r: 0, g: 0, b: 1, a: 1}
---- !u!114 &4752156053906186385
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2015434656898269652}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1857b2df8de24b24190ce9e067d2e1e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RandomHitSparks:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  OnDetectVfx:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  OnDetectSfx: {fileID: 8300000, guid: 25722734eeccba042a18e26e376ca542, type: 3}
-  AttackStopDistanceRatio: 0.08
-  MovementSound: {fileID: 0}
-  PitchDistortionMovementSpeed:
-    Min: 1
-    Max: 1.5
 --- !u!114 &6370966072896210225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -361,6 +334,26 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &4161126364194324815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2015434656898269652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1857b2df8de24b24190ce9e067d2e1e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RandomHitSparks: []
+  OnDetectVfx: []
+  OnDetectSfx: {fileID: 0}
+  AttackStopDistanceRatio: 0
+  MovementSound: {fileID: 0}
+  PitchDistortionMovementSpeed:
+    Min: 0
+    Max: 0
 --- !u!1 &2201913640410082181
 GameObject:
   m_ObjectHideFlags: 0
@@ -1061,9 +1054,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2015434656898269656}
     m_Modifications:
+    - target: {fileID: 4073810537523457601, guid: de0e7f3535c60e445a4b826bbbfeb569, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: 48822aafb47ffe547aa2bf9a19ee8dfe, type: 2}
+    - target: {fileID: 4073810537523457601, guid: de0e7f3535c60e445a4b826bbbfeb569, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7066876632004969688, guid: de0e7f3535c60e445a4b826bbbfeb569, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7287643752218865281, guid: de0e7f3535c60e445a4b826bbbfeb569, type: 3}
       propertyPath: m_Name
@@ -1111,7 +1112,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8781754121149497632, guid: de0e7f3535c60e445a4b826bbbfeb569, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

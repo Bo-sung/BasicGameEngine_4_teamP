@@ -47,6 +47,16 @@ public class BossMobile : EnemyMobile
     [Tooltip("보스 죽음 폭발 데미지")]
     public float BossDeathExplosionDamage = 50f;
 
+    [Header("공격 패턴 설정")]
+    [Tooltip("사용할 공격 패턴 배열")]
+    public BossAttackPattern[] AttackPatterns;
+
+    [Tooltip("패턴 전환 쿨다운")]
+    public float PatternCooldown = 3f;
+
+    [Tooltip("패턴 사용 시 일반 무기 비활성화")]
+    public bool DisableWeaponDuringPattern = true;
+
     // 쫄몹 생성 관련 변수
     private bool m_HasSpawnedMinions = false;
     private float m_LastMinionSpawnTime = 0f;
@@ -55,6 +65,11 @@ public class BossMobile : EnemyMobile
 
     // 스케일링된 보스 값
     private float m_SpawnHealthThresholdValue;
+
+    // 공격 패턴 관련 변수
+    private int m_CurrentPatternIndex = 0;
+    private float m_LastPatternTime = -999f;
+    private bool m_IsExecutingPattern = false;
 
     [Tooltip("보스 애니메이터 (인스펙터에서 할당)")]
     public Animator BossAnimator;
@@ -93,6 +108,23 @@ public class BossMobile : EnemyMobile
         {
             LayerMask obstacles = LayerMask.GetMask("Obstacle", "Wall"); // 장애물 레이어
             MinionSpawnPoints = GetMinionSpawnPositions(transform, 10f, MinionsPerSpawn, obstacles).ToArray();
+        }
+
+        // 공격 패턴 초기화
+        InitializeAttackPatterns();
+    }
+
+    private void InitializeAttackPatterns()
+    {
+        if (AttackPatterns == null || AttackPatterns.Length == 0) return;
+
+        // 각 패턴에 타겟 설정
+        foreach (var pattern in AttackPatterns)
+        {
+            if (pattern != null)
+            {
+                pattern.BossTransform = transform;
+            }
         }
     }
 
@@ -205,23 +237,33 @@ public class BossMobile : EnemyMobile
         if (MinionPrefab == null)
             return;
 
+        Vector3 spawnPosition;
+        Quaternion spawnRotation;
+
         if (MinionSpawnPoints.Length == 0)
         {
-            // 스폰 포인트가 없으면 현재 위치 주변에 생성 시도
-            return;
+            // 스폰 포인트가 없으면 보스 주변 랜덤 위치에 생성
+            float spawnRadius = 5f;
+            Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
+            spawnPosition = transform.position + new Vector3(randomCircle.x, 0, randomCircle.y);
+            spawnRotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
         }
-
-        // 랜덤 생성 위치 선택
-        Transform spawnPoint = MinionSpawnPoints[Random.Range(0, MinionSpawnPoints.Length)];
+        else
+        {
+            // 랜덤 생성 위치 선택
+            Transform spawnPoint = MinionSpawnPoints[Random.Range(0, MinionSpawnPoints.Length)];
+            spawnPosition = spawnPoint.position;
+            spawnRotation = spawnPoint.rotation;
+        }
 
         // 생성 효과 표시
         if (MinionSpawnVFX)
         {
-            Instantiate(MinionSpawnVFX, spawnPoint.position, Quaternion.identity);
+            Instantiate(MinionSpawnVFX, spawnPosition, Quaternion.identity);
         }
 
         // 쫄몹 생성
-        GameObject minion = Instantiate(MinionPrefab, spawnPoint.position, spawnPoint.rotation);
+        GameObject minion = Instantiate(MinionPrefab, spawnPosition, spawnRotation);
 
         // 생성된 쫄몹 추적
         m_SpawnedMinions.Add(minion);
@@ -236,6 +278,89 @@ public class BossMobile : EnemyMobile
                 // 필요시 타겟 정보 전달
             }
         }
+    }
+
+    /// <summary>
+    /// AI 상태별 행동 오버라이드 (공격 패턴 시스템 사용)
+    /// </summary>
+    protected override void UpdateCurrentAiState()
+    {
+        // Patrol과 Follow는 부모 클래스 로직 사용
+        if (CurrentAiState != AIState.Attack)
+        {
+            base.UpdateCurrentAiState();
+            return;
+        }
+
+        // Attack 상태: 패턴 기반 공격
+        if (m_EnemyController.KnownDetectedTarget == null) return;
+
+        // 타겟 방향 조준
+        m_EnemyController.OrientTowards(m_EnemyController.KnownDetectedTarget.transform.position);
+        m_EnemyController.OrientWeaponsTowards(m_EnemyController.KnownDetectedTarget.transform.position);
+
+        // 제자리 정지 (원거리 보스)
+        m_EnemyController.SetNavDestination(transform.position);
+
+        // 공격 패턴 실행 (보스는 패턴만 사용)
+        if (AttackPatterns != null && AttackPatterns.Length > 0)
+        {
+            ExecuteAttackPattern();
+        }
+        // 패턴이 없으면 아무것도 하지 않음 (보스는 기본 공격 없음)
+    }
+
+    /// <summary>
+    /// 공격 패턴 실행
+    /// </summary>
+    private void ExecuteAttackPattern()
+    {
+        // 이미 패턴 실행 중이면 대기
+        if (m_IsExecutingPattern) return;
+
+        // 쿨다운 확인
+        if (Time.time < m_LastPatternTime + PatternCooldown) return;
+
+        // 타겟 설정 (매 프레임 업데이트)
+        foreach (var pattern in AttackPatterns)
+        {
+            if (pattern != null)
+            {
+                pattern.Target = m_EnemyController.KnownDetectedTarget.transform;
+            }
+        }
+
+        // 현재 패턴 가져오기
+        BossAttackPattern currentPattern = AttackPatterns[m_CurrentPatternIndex];
+        
+        if (currentPattern != null && currentPattern.CanExecute())
+        {
+            m_IsExecutingPattern = true;
+            m_LastPatternTime = Time.time;
+
+            // 패턴 시작
+            currentPattern.StartPattern();
+
+            // 다음 패턴으로 전환
+            m_CurrentPatternIndex = (m_CurrentPatternIndex + 1) % AttackPatterns.Length;
+
+            // 패턴 완료 대기 코루틴
+            StartCoroutine(WaitForPatternComplete(currentPattern));
+        }
+    }
+
+    /// <summary>
+    /// 패턴 완료 대기
+    /// </summary>
+    private IEnumerator WaitForPatternComplete(BossAttackPattern pattern)
+    {
+        // 패턴이 완료될 때까지 대기
+        while (pattern.IsExecuting)
+        {
+            yield return null;
+        }
+
+        m_IsExecutingPattern = false;
     }
 
     // 보스 사망 처리

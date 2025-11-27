@@ -267,7 +267,7 @@ public class EnemyController : MonoBehaviour
 
     void OnDetectedTarget()
     {
-        onDetectedTarget.Invoke();
+        onDetectedTarget?.Invoke();
 
         // 눈 렌더러가 설정되어 있다면 눈 기본 색상과 프로퍼티 블록 설정
         if (m_EyeRendererData.Renderer != null)

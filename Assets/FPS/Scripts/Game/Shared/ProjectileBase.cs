@@ -32,4 +32,15 @@ public abstract class ProjectileBase : MonoBehaviour
 
         OnShoot?.Invoke();
     }
+
+    public void Shoot(GameObject owner, Vector3 inheritedVelocity, float initialCharge = 0f)
+    {
+        Owner = owner;
+        InitialPosition = transform.position;
+        InitialDirection = transform.forward;
+        InheritedMuzzleVelocity = inheritedVelocity;
+        InitialCharge = initialCharge;
+
+        OnShoot?.Invoke();
+    }
 }
