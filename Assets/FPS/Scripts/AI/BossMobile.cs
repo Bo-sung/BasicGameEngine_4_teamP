@@ -70,6 +70,7 @@ public class BossMobile : EnemyMobile
     private int m_CurrentPatternIndex = 0;
     private float m_LastPatternTime = -999f;
     private bool m_IsExecutingPattern = false;
+    private bool m_IsSpawningMinions = false;
 
     [Tooltip("보스 애니메이터 (인스펙터에서 할당)")]
     public Animator BossAnimator;
@@ -152,11 +153,13 @@ public class BossMobile : EnemyMobile
 
     private IEnumerator SpawnMinionsSequence()
     {
+        m_IsSpawningMinions = true;
+
         // 보스 특수 애니메이션 또는 효과
         if (m_Animator != null)
         {
-            // 애니메이터에 SpawnMinions 트리거가 있다면 사용
-            // m_Animator.SetTrigger("SpawnMinions");
+            m_Animator.SetTrigger("SpawnMinions");
+            m_Animator.SetFloat("MoveSpeed", 0f);
         }
 
         // 생성 사운드 재생
@@ -178,6 +181,7 @@ public class BossMobile : EnemyMobile
 
         // 마지막 생성 시간 업데이트
         m_LastMinionSpawnTime = Time.time;
+        m_IsSpawningMinions = false;
     }
 
     public List<Transform> GetMinionSpawnPositions(Transform bossTransform, float radius, int minionCount, LayerMask obstacleLayer)
@@ -285,15 +289,16 @@ public class BossMobile : EnemyMobile
     /// </summary>
     protected override void UpdateCurrentAiState()
     {
-        // Patrol과 Follow는 부모 클래스 로직 사용
-        if (CurrentAiState != AIState.Attack)
-        {
-            base.UpdateCurrentAiState();
-            return;
-        }
+        base.UpdateCurrentAiState();
+    }
 
+
+    protected override void HandleStateAttack()
+    {
+        Debug.Log($"{this.gameObject.name} BossMobile HandleStateAttack");
         // Attack 상태: 패턴 기반 공격
-        if (m_EnemyController.KnownDetectedTarget == null) return;
+        if (m_EnemyController.KnownDetectedTarget == null)
+            return;
 
         // 타겟 방향 조준
         m_EnemyController.OrientTowards(m_EnemyController.KnownDetectedTarget.transform.position);
@@ -309,14 +314,13 @@ public class BossMobile : EnemyMobile
         }
         // 패턴이 없으면 아무것도 하지 않음 (보스는 기본 공격 없음)
     }
-
     /// <summary>
     /// 공격 패턴 실행
     /// </summary>
     private void ExecuteAttackPattern()
     {
         // 이미 패턴 실행 중이면 대기
-        if (m_IsExecutingPattern) return;
+        if (m_IsExecutingPattern || m_IsSpawningMinions) return;
 
         // 쿨다운 확인
         if (Time.time < m_LastPatternTime + PatternCooldown) return;

@@ -49,6 +49,17 @@ public class GuidedBombardmentAttack : BossAttackPattern
     {
         if (Target == null) yield break;
 
+        // 애니메이션 처리
+        Animator animator = BossTransform.GetComponent<Animator>();
+        if (animator == null) animator = BossTransform.GetComponentInChildren<Animator>();
+        
+        if (animator != null)
+        {
+            animator.SetTrigger("Bombardment");
+            animator.SetBool("IsActive", true);
+            animator.SetFloat("MoveSpeed", 0f);
+        }
+
         m_Telegraphs.Clear();
         m_ExplosionPositions.Clear();
 
@@ -110,6 +121,12 @@ public class GuidedBombardmentAttack : BossAttackPattern
             {
                 Destroy(telegraph.gameObject);
             }
+        }
+
+        // 애니메이션 종료
+        if (animator != null)
+        {
+            animator.SetBool("IsActive", false);
         }
 
         OnPatternComplete();

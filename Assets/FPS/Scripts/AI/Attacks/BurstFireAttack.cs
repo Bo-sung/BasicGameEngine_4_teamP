@@ -51,9 +51,20 @@ public class BurstFireAttack : BossAttackPattern
     {
         if (Target == null) yield break;
 
-        // 1. 플레이어 방향 계산
+        // 1. 플레이어 방향 계산 (초기 방향 고정)
         Vector3 directionToTarget = (Target.position - BossTransform.position).normalized;
         directionToTarget.y = 0;
+
+        // 애니메이션 처리
+        Animator animator = BossTransform.GetComponent<Animator>();
+        if (animator == null) animator = BossTransform.GetComponentInChildren<Animator>();
+        
+        if (animator != null)
+        {
+            animator.SetTrigger("BurstFire");
+            animator.SetBool("IsActive", true);
+            animator.SetFloat("MoveSpeed", 0f); // 이동 애니메이션 방지
+        }
 
         // 2. 경고 표시
         Vector3 telegraphPosition = BossTransform.position + Vector3.up * 0.1f;
@@ -76,22 +87,25 @@ public class BurstFireAttack : BossAttackPattern
         // 3. 경고 시간 대기
         yield return new WaitForSeconds(WarningDuration);
 
-        // 4. 지속 연사 (미스포춘 궁극기 스타일)
+        // 4. 지속 연사 (Sweeping Pattern: Left -> Right)
         float startTime = Time.time;
         float nextFireTime = 0f;
 
         while (Time.time < startTime + FireDuration)
         {
-            // 타겟 방향 지속 업데이트 (선택 사항: 고정하려면 루프 밖으로 이동)
-            if (Target != null)
-            {
-                directionToTarget = (Target.position - BossTransform.position).normalized;
-                directionToTarget.y = 0;
-            }
+            // 타겟 방향 지속 업데이트 제거 (초기 방향 directionToTarget 유지)
+            // 보스가 회전하지 않도록 고정하거나, 필요시 보스 몸체만 회전시킬 수 있음
+            // 여기서는 경고된 범위로만 쏘도록 함
 
             if (Time.time >= nextFireTime)
             {
-                FireBarrage(directionToTarget);
+                // 현재 진행률 (0.0 ~ 1.0)
+                float t = (Time.time - startTime) / FireDuration;
+                
+                // 현재 각도 계산 (Left -> Right)
+                float currentYawAngle = Mathf.Lerp(-SpreadAngle / 2f, SpreadAngle / 2f, t);
+
+                FireBarrage(directionToTarget, currentYawAngle);
                 
                 if (FireSfx)
                 {
@@ -110,10 +124,16 @@ public class BurstFireAttack : BossAttackPattern
             Destroy(m_CurrentTelegraph.gameObject);
         }
 
+        // 애니메이션 종료
+        if (animator != null)
+        {
+            animator.SetBool("IsActive", false);
+        }
+
         OnPatternComplete();
     }
 
-    void FireBarrage(Vector3 centerDirection)
+    void FireBarrage(Vector3 centerDirection, float yawAngle)
     {
         if (ProjectilePrefab == null) return;
 
@@ -121,14 +141,19 @@ public class BurstFireAttack : BossAttackPattern
 
         for (int i = 0; i < ProjectilesPerShot; i++)
         {
-            // 부채꼴 내 무작위 좌우 각도
-            float yawAngle = Random.Range(-SpreadAngle / 2, SpreadAngle / 2);
-            
-            // 상하 각도 (Pitch) 적용 - 아래로 쏘려면 X축 회전
-            Quaternion rotation = Quaternion.LookRotation(centerDirection) * Quaternion.Euler(PitchAngle, yawAngle, 0);
-            
-            Vector3 direction = rotation * Vector3.forward;
+            // 다중 발사체일 경우, 현재 각도 주변으로 약간의 산탄 적용 (선택 사항)
+            float spreadOffset = 0f;
+            if (ProjectilesPerShot > 1)
+            {
+                spreadOffset = Random.Range(-5f, 5f); // 5도 내외의 좁은 산탄
+            }
 
+            // 최종 각도 계산
+            float finalYaw = yawAngle + spreadOffset;
+            
+            // 상하 각도 (Pitch) 적용
+            Quaternion rotation = Quaternion.LookRotation(centerDirection) * Quaternion.Euler(PitchAngle, finalYaw, 0);
+            
             // 발사체 생성
             ProjectileBase projectile = Instantiate(ProjectilePrefab, muzzlePos, rotation);
             

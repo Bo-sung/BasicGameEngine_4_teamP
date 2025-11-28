@@ -7,7 +7,7 @@ public class EnemyMobile : AIBase
     {
         Patrol,  // 순찰
         Follow,  // 추적
-        Attack,  // 공격
+        Attack   // 공격
     }
 
     [Header("이동 설정")]
@@ -76,6 +76,7 @@ public class EnemyMobile : AIBase
         }
     }
 
+    // fsm 전환
     protected override void UpdateAiStateTransitions()
     {
         // 상태 전환 로직
@@ -107,38 +108,56 @@ public class EnemyMobile : AIBase
         {
             case AIState.Patrol:
                 // 순찰 로직
-                m_EnemyController.UpdatePathDestination();
-                m_EnemyController.SetNavDestination(m_EnemyController.GetDestinationOnPath());
+                HandleStatePatrol();
                 break;
 
             case AIState.Follow:
                 // 추적 로직
-                m_EnemyController.SetNavDestination(m_EnemyController.KnownDetectedTarget.transform.position);
-                m_EnemyController.OrientTowards(m_EnemyController.KnownDetectedTarget.transform.position);
-                m_EnemyController.OrientWeaponsTowards(m_EnemyController.KnownDetectedTarget.transform.position);
+                HandleStateFollow();
                 break;
 
             case AIState.Attack:
                 // 공격 로직
-                if (Vector3.Distance(
-                    m_EnemyController.KnownDetectedTarget.transform.position,
-                    m_EnemyController.DetectionModule.DetectionSourcePoint.position)
-                    >= (AttackStopDistanceRatio * m_EnemyController.DetectionModule.AttackRange))
-                {
-                    // 적절한 공격 거리가 아니면 이동
-                    m_EnemyController.SetNavDestination(m_EnemyController.KnownDetectedTarget.transform.position);
-                }
-                else
-                {
-                    // 적절한 공격 거리면 제자리 정지
-                    m_EnemyController.SetNavDestination(transform.position);
-                }
-
-                // 타겟 방향 조준 및 공격
-                m_EnemyController.OrientTowards(m_EnemyController.KnownDetectedTarget.transform.position);
-                m_EnemyController.TryAtack(m_EnemyController.KnownDetectedTarget.transform.position);
+                HandleStateAttack();
                 break;
         }
+    }
+
+    protected virtual void HandleStateAttack()
+    {
+        Debug.Log($"{this.gameObject.name} EnemyMobile HandleStateAttack");
+        if (Vector3.Distance(
+                            m_EnemyController.KnownDetectedTarget.transform.position,
+                            m_EnemyController.DetectionModule.DetectionSourcePoint.position)
+                            >= (AttackStopDistanceRatio * m_EnemyController.DetectionModule.AttackRange))
+        {
+            // 적절한 공격 거리가 아니면 이동
+            m_EnemyController.SetNavDestination(m_EnemyController.KnownDetectedTarget.transform.position);
+        }
+        else
+        {
+            // 적절한 공격 거리면 제자리 정지
+            m_EnemyController.SetNavDestination(transform.position);
+        }
+
+        // 타겟 방향 조준 및 공격
+        m_EnemyController.OrientTowards(m_EnemyController.KnownDetectedTarget.transform.position);
+        m_EnemyController.TryAtack(m_EnemyController.KnownDetectedTarget.transform.position);
+    }
+
+    protected virtual void HandleStateFollow()
+    {
+        Debug.Log($"{this.gameObject.name} EnemyMobile HandleStateFollow");
+        m_EnemyController.SetNavDestination(m_EnemyController.KnownDetectedTarget.transform.position);
+        m_EnemyController.OrientTowards(m_EnemyController.KnownDetectedTarget.transform.position);
+        m_EnemyController.OrientWeaponsTowards(m_EnemyController.KnownDetectedTarget.transform.position);
+    }
+
+    protected virtual void HandleStatePatrol()
+    {
+        Debug.Log($"{this.gameObject.name} EnemyMobile HandleStatePatrol");
+        m_EnemyController.UpdatePathDestination();
+        m_EnemyController.SetNavDestination(m_EnemyController.GetDestinationOnPath());
     }
 
     // 이벤트 핸들러 재정의

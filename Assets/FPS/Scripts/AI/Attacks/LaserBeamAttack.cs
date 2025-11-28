@@ -41,6 +41,16 @@ public class LaserBeamAttack : BossAttackPattern
     {
         if (Target == null) yield break;
 
+        // 애니메이션 처리
+        Animator animator = BossTransform.GetComponent<Animator>();
+        if (animator == null) animator = BossTransform.GetComponentInChildren<Animator>();
+        
+        if (animator != null)
+        {
+            animator.SetTrigger("LaserBeam");
+            animator.SetFloat("MoveSpeed", 0f);
+        }
+
         // 1. 플레이어 방향 계산
         Vector3 directionToTarget = (Target.position - BossTransform.position).normalized;
         directionToTarget.y = 0; // 수평 방향만
@@ -72,8 +82,9 @@ public class LaserBeamAttack : BossAttackPattern
         // 3. 경고 시간 대기
         yield return new WaitForSeconds(WarningDuration);
 
-        // 4. 레이저 발사
-        FireLaser(directionToTarget);
+        // 4. 레이저 발사 및 지속 데미지 처리
+        float elapsedTime = 0f;
+        if (LaserLineRenderer != null) LaserLineRenderer.enabled = true;
 
         // 발사 사운드
         if (LaserFireSfx)
@@ -81,10 +92,17 @@ public class LaserBeamAttack : BossAttackPattern
             AudioUtility.CreateSFX(LaserFireSfx, BossTransform.position, AudioUtility.AudioGroups.EnemyAttack, 0f);
         }
 
-        // 5. 레이저 지속
-        yield return new WaitForSeconds(LaserDuration);
+        while (elapsedTime < LaserDuration)
+        {
+            elapsedTime += Time.deltaTime;
 
-        // 6. 레이저 종료
+            // 매 프레임 레이저 방향 및 충돌 계산
+            UpdateLaser(directionToTarget);
+
+            yield return null;
+        }
+
+        // 5. 레이저 종료
         if (LaserLineRenderer != null)
         {
             LaserLineRenderer.enabled = false;
@@ -99,29 +117,30 @@ public class LaserBeamAttack : BossAttackPattern
         OnPatternComplete();
     }
 
-    void FireLaser(Vector3 direction)
+    void UpdateLaser(Vector3 direction)
     {
-        // Raycast로 레이저 충돌 감지
-        RaycastHit hit;
         Vector3 startPos = BossTransform.position + Vector3.up * 1.5f; // 보스 가슴 높이
         Vector3 endPos = startPos + direction * LaserRange;
 
+        // Raycast로 레이저 충돌 감지
+        RaycastHit hit;
         if (Physics.Raycast(startPos, direction, out hit, LaserRange, ~LayerMask.GetMask("Enemy")))
         {
             endPos = hit.point;
 
-            // 플레이어 피격 처리
+            // 플레이어 피격 처리 (지속 데미지)
             Damageable damageable = hit.collider.GetComponent<Damageable>();
             if (damageable != null)
             {
-                damageable.InflictDamage(Damage, true, BossTransform.gameObject);
+                // 초당 데미지로 환산하여 적용
+                float damagePerFrame = (Damage / LaserDuration) * Time.deltaTime;
+                damageable.InflictDamage(damagePerFrame, true, BossTransform.gameObject);
             }
         }
 
-        // LineRenderer로 레이저 시각화
+        // LineRenderer로 레이저 시각화 업데이트
         if (LaserLineRenderer != null)
         {
-            LaserLineRenderer.enabled = true;
             LaserLineRenderer.SetPosition(0, startPos);
             LaserLineRenderer.SetPosition(1, endPos);
             LaserLineRenderer.startWidth = LaserWidth;

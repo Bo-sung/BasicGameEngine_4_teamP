@@ -270,6 +270,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: HPCharacter_Model
       objectReference: {fileID: 0}
+    - target: {fileID: 7673487251499248760, guid: c98043d57e0190845b790d7b92990bee, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7673487251499544664, guid: c98043d57e0190845b790d7b92990bee, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -457,7 +461,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Weapon_AssaultRifle
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4161126364194324815, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
     m_RemovedGameObjects:
     - {fileID: 7026724581344680704, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
     m_AddedGameObjects:
