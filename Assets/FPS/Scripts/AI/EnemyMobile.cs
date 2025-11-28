@@ -11,6 +11,7 @@ namespace Unity.FPS.AI
     {
         public enum AIState
         {
+            Idle,
             Patrol, // 순찰
             Follow, // 추적
             Attack, // 공격
@@ -53,7 +54,10 @@ namespace Unity.FPS.AI
             m_EnemyController.onDamaged += OnDamaged;
 
             // 순찰 시작
-            AiState = AIState.Patrol;
+            //AiState = AIState.Patrol;
+
+            // idle 상태로 시작
+            AiState = AIState.Idle;
 
             // 이동 사운드를 재생하기 위해 오디오 소스 추가
             m_AudioSource = GetComponent<AudioSource>();
@@ -68,6 +72,10 @@ namespace Unity.FPS.AI
             UpdateCurrentAiState();
 
             float moveSpeed = m_EnemyController.NavMeshAgent.velocity.magnitude;
+
+            // ★ Idle 상태에서는 무조건 MoveSpeed = 0
+            if (AiState == AIState.Idle)
+                moveSpeed = 0f;
 
             // 애니메이터 속도 매개변수 업데이트
             Animator.SetFloat(k_AnimMoveSpeedParameter, moveSpeed);
@@ -107,15 +115,22 @@ namespace Unity.FPS.AI
             // 현재 상태 로직 처리
             switch (AiState)
             {
+                case AIState.Idle:
+                    m_EnemyController.SetNavDestination(transform.position);
+                    Animator.SetFloat(k_AnimMoveSpeedParameter, 0f);
+                    break;
+
                 case AIState.Patrol:
                     m_EnemyController.UpdatePathDestination();
                     m_EnemyController.SetNavDestination(m_EnemyController.GetDestinationOnPath());
                     break;
+
                 case AIState.Follow:
                     m_EnemyController.SetNavDestination(m_EnemyController.KnownDetectedTarget.transform.position);
                     m_EnemyController.OrientTowards(m_EnemyController.KnownDetectedTarget.transform.position);
                     m_EnemyController.OrientWeaponsTowards(m_EnemyController.KnownDetectedTarget.transform.position);
                     break;
+
                 case AIState.Attack:
                     if (Vector3.Distance(m_EnemyController.KnownDetectedTarget.transform.position,
                             m_EnemyController.DetectionModule.DetectionSourcePoint.position)
@@ -141,7 +156,7 @@ namespace Unity.FPS.AI
 
         void OnDetectedTarget()
         {
-            if (AiState == AIState.Patrol)
+            if (AiState != AIState.Attack)
             {
                 AiState = AIState.Follow;
             }
