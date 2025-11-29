@@ -1,4 +1,4 @@
-// WeaponTableData.cs
+﻿// WeaponTableData.cs
 using UnityEngine;
 
 namespace FPS.Common

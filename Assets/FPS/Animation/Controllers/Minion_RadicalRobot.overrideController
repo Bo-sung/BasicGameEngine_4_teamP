@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Minion_RadicalRobot
+  m_Controller: {fileID: 9100000, guid: e029e430e913b374387843833ab0b593, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: d4c6e776733ed444c81b0b76a8610f82, type: 3}
+    m_OverrideClip: {fileID: -623603649343465320, guid: 29787f12397d43449937d4338997628f, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 66088e9cde32b5344b49394a051595d4, type: 3}
+    m_OverrideClip: {fileID: -623603649343465320, guid: d6da3213ddceb8e4382cfa1d828d4884, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: d21446ed42271994d97223de428c84f6, type: 3}
+    m_OverrideClip: {fileID: -623603649343465320, guid: 29787f12397d43449937d4338997628f, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 77af6154680218844a53b30c3371260a, type: 3}
+    m_OverrideClip: {fileID: -623603649343465320, guid: 67bb0f59556f4fd4fa08f06f9e00bb90, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 78b093b3bf9e0b7488fb706d8ad2e0f8, type: 3}
+    m_OverrideClip: {fileID: -623603649343465320, guid: ce0534587ed52df47ae65b1985f3b583, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 99dcd53d86db4fc4b813a3d1db9e97e4, type: 3}
+    m_OverrideClip: {fileID: -623603649343465320, guid: af1af616f07463841833dc7c850b7395, type: 3}

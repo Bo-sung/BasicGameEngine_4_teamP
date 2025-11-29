@@ -1,162 +1,135 @@
-using Unity.FPS.Game;
+﻿
 using UnityEngine;
 
-namespace Unity.FPS.AI
+public class EnemyTurret : AIBase
 {
-    [RequireComponent(typeof(EnemyController))]
-    public class EnemyTurret : MonoBehaviour
+    public enum AIState
     {
-        public enum AIState
+        Idle,
+        Attack,
+    }
+
+    [Header("터렛 설정")]
+    public Transform TurretPivot;
+    public Transform TurretAimPoint;
+    public float AimRotationSharpness = 5f;
+    public float LookAtRotationSharpness = 2.5f;
+    public float DetectionFireDelay = 1f;
+    public float AimingTransitionBlendTime = 1f;
+
+    // 특성 재정의
+    public new AIState CurrentAiState
+    {
+        get => (AIState)base.CurrentAiState;
+        private set => base.CurrentAiState = value;
+    }
+
+    Quaternion m_RotationWeaponForwardToPivot;
+    float m_TimeStartedDetection;
+    float m_TimeLostDetection;
+    Quaternion m_PreviousPivotAimingRotation;
+    Quaternion m_PivotAimingRotation;
+
+    protected override void SetupAnimator()
+    {
+        m_Animator = GetComponent<Animator>();
+    }
+
+    protected override void SetInitialState()
+    {
+        // 초기 상태를 Idle로 설정
+        CurrentAiState = AIState.Idle;
+        m_TimeStartedDetection = Mathf.NegativeInfinity;
+        m_PreviousPivotAimingRotation = TurretPivot.rotation;
+
+        // 무기 방향과 피봇 간의 회전 오프셋 계산
+        m_RotationWeaponForwardToPivot =
+            Quaternion.Inverse(m_EnemyController.GetCurrentWeapon().WeaponMuzzle.rotation) * TurretPivot.rotation;
+    }
+
+    protected override void UpdateAiStateTransitions()
+    {
+        // 터렛은 onDetectedTarget/onLostTarget 이벤트로만 상태 전환을 처리
+        // 여기서는 추가 전환 로직 없음
+    }
+
+    protected override void UpdateCurrentAiState()
+    {
+        // 현재 상태에 따른 행동 수행
+        switch (CurrentAiState)
         {
-            Idle,
-            Attack,
+            case AIState.Attack:
+                bool mustShoot = Time.time > m_TimeStartedDetection + DetectionFireDelay;
+
+                // 타겟 방향으로 조준 회전 계산
+                Vector3 directionToTarget =
+                    (m_EnemyController.KnownDetectedTarget.transform.position - TurretAimPoint.position).normalized;
+                Quaternion offsettedTargetRotation =
+                    Quaternion.LookRotation(directionToTarget) * m_RotationWeaponForwardToPivot;
+                m_PivotAimingRotation = Quaternion.Slerp(
+                    m_PreviousPivotAimingRotation,
+                    offsettedTargetRotation,
+                    (mustShoot ? AimRotationSharpness : LookAtRotationSharpness) * Time.deltaTime);
+
+                // 발사
+                if (mustShoot)
+                {
+                    Vector3 correctedDirectionToTarget =
+                        (m_PivotAimingRotation * Quaternion.Inverse(m_RotationWeaponForwardToPivot)) * Vector3.forward;
+
+                    m_EnemyController.TryAtack(TurretAimPoint.position + correctedDirectionToTarget);
+                }
+                break;
+        }
+    }
+
+    // Late Update에서 실제 포탑 회전 적용
+    void LateUpdate()
+    {
+        UpdateTurretAiming();
+    }
+
+    void UpdateTurretAiming()
+    {
+        switch (CurrentAiState)
+        {
+            case AIState.Attack:
+                TurretPivot.rotation = m_PivotAimingRotation;
+                break;
+            default:
+                // 애니메이션의 포탑 회전 사용
+                TurretPivot.rotation = Quaternion.Slerp(
+                    m_PivotAimingRotation,
+                    TurretPivot.rotation,
+                    (Time.time - m_TimeLostDetection) / AimingTransitionBlendTime);
+                break;
         }
 
-        public Transform TurretPivot;
-        public Transform TurretAimPoint;
-        public Animator Animator;
-        public float AimRotationSharpness = 5f;
-        public float LookAtRotationSharpness = 2.5f;
-        public float DetectionFireDelay = 1f;
-        public float AimingTransitionBlendTime = 1f;
+        m_PreviousPivotAimingRotation = TurretPivot.rotation;
+    }
 
-        [Tooltip("The random hit damage effects")]
-        public ParticleSystem[] RandomHitSparks;
+    // 이벤트 핸들러 재정의
+    protected override void OnDetectedTarget()
+    {
+        base.OnDetectedTarget();
 
-        public ParticleSystem[] OnDetectVfx;
-        public AudioClip OnDetectSfx;
-
-        public AIState AiState { get; private set; }
-
-        EnemyController m_EnemyController;
-        Health m_Health;
-        Quaternion m_RotationWeaponForwardToPivot;
-        float m_TimeStartedDetection;
-        float m_TimeLostDetection;
-        Quaternion m_PreviousPivotAimingRotation;
-        Quaternion m_PivotAimingRotation;
-
-        const string k_AnimOnDamagedParameter = "OnDamaged";
-        const string k_AnimIsActiveParameter = "IsActive";
-
-        void Start()
+        if (CurrentAiState == AIState.Idle)
         {
-            m_Health = GetComponent<Health>();
-            DebugUtility.HandleErrorIfNullGetComponent<Health, EnemyTurret>(m_Health, this, gameObject);
-            m_Health.OnDamaged += OnDamaged;
-
-            m_EnemyController = GetComponent<EnemyController>();
-            DebugUtility.HandleErrorIfNullGetComponent<EnemyController, EnemyTurret>(m_EnemyController, this, gameObject);
-
-            m_EnemyController.onDetectedTarget += OnDetectedTarget;
-            m_EnemyController.onLostTarget += OnLostTarget;
-
-            // Remember the rotation offset between the pivot's forward and the weapon's forward
-            m_RotationWeaponForwardToPivot = Quaternion.Inverse(m_EnemyController.GetCurrentWeapon().WeaponMuzzle.rotation) * TurretPivot.rotation;
-
-            // Start with idle
-            AiState = AIState.Idle;
-
-            m_TimeStartedDetection = Mathf.NegativeInfinity;
-            m_PreviousPivotAimingRotation = TurretPivot.rotation;
+            CurrentAiState = AIState.Attack;
         }
 
-        void Update()
+        m_TimeStartedDetection = Time.time;
+    }
+
+    protected override void OnLostTarget()
+    {
+        base.OnLostTarget();
+
+        if (CurrentAiState == AIState.Attack)
         {
-            UpdateCurrentAiState();
+            CurrentAiState = AIState.Idle;
         }
 
-        void LateUpdate()
-        {
-            UpdateTurretAiming();
-        }
-
-        void UpdateCurrentAiState()
-        {
-            // Handle logic 
-            switch (AiState)
-            {
-                case AIState.Attack:
-                    bool mustShoot = Time.time > m_TimeStartedDetection + DetectionFireDelay;
-                    // Calculate the desired rotation of our turret (aim at target)
-                    Vector3 directionToTarget = (m_EnemyController.KnownDetectedTarget.transform.position - TurretAimPoint.position).normalized;
-                    Quaternion offsettedTargetRotation = Quaternion.LookRotation(directionToTarget) * m_RotationWeaponForwardToPivot;
-                    m_PivotAimingRotation = Quaternion.Slerp(m_PreviousPivotAimingRotation, offsettedTargetRotation, (mustShoot ? AimRotationSharpness : LookAtRotationSharpness) * Time.deltaTime);
-
-                    // shoot
-                    if (mustShoot)
-                    {
-                        Vector3 correctedDirectionToTarget = (m_PivotAimingRotation * Quaternion.Inverse(m_RotationWeaponForwardToPivot)) * Vector3.forward;
-
-                        m_EnemyController.TryAtack(TurretAimPoint.position + correctedDirectionToTarget);
-                    }
-
-                    break;
-            }
-        }
-
-        void UpdateTurretAiming()
-        {
-            switch (AiState)
-            {
-                case AIState.Attack:
-                    TurretPivot.rotation = m_PivotAimingRotation;
-                    break;
-                default:
-                    // Use the turret rotation of the animation
-                    TurretPivot.rotation = Quaternion.Slerp(m_PivotAimingRotation, TurretPivot.rotation, (Time.time - m_TimeLostDetection) / AimingTransitionBlendTime);
-                    break;
-            }
-
-            m_PreviousPivotAimingRotation = TurretPivot.rotation;
-        }
-
-        void OnDamaged(float dmg, GameObject source)
-        {
-            if (RandomHitSparks.Length > 0)
-            {
-                int n = Random.Range(0, RandomHitSparks.Length - 1);
-                RandomHitSparks[n].Play();
-            }
-
-            Animator.SetTrigger(k_AnimOnDamagedParameter);
-        }
-
-        void OnDetectedTarget()
-        {
-            if (AiState == AIState.Idle)
-            {
-                AiState = AIState.Attack;
-            }
-
-            for (int i = 0; i < OnDetectVfx.Length; i++)
-            {
-                OnDetectVfx[i].Play();
-            }
-
-            if (OnDetectSfx)
-            {
-                AudioUtility.CreateSFX(OnDetectSfx, transform.position, AudioUtility.AudioGroups.EnemyDetection, 1f);
-            }
-
-            Animator.SetBool(k_AnimIsActiveParameter, true);
-            m_TimeStartedDetection = Time.time;
-        }
-
-        void OnLostTarget()
-        {
-            if (AiState == AIState.Attack)
-            {
-                AiState = AIState.Idle;
-            }
-
-            for (int i = 0; i < OnDetectVfx.Length; i++)
-            {
-                OnDetectVfx[i].Stop();
-            }
-
-            Animator.SetBool(k_AnimIsActiveParameter, false);
-            m_TimeLostDetection = Time.time;
-        }
+        m_TimeLostDetection = Time.time;
     }
 }

@@ -1,3 +1,1 @@
 weaponID,weaponName,shootType,fireRate,bulletsPerShot,spread,maxAmmo,recoil,damage,reloadSpeed,reloadDelay,autoReload,projectileID,projectileSpeed,projectileLifetime,fireSoundPath,muzzleFlashPath
-lmg,LMG,Automatic,0.067,1,5,100,0.5,15,2,0.8,FALSE,bullet_default,100,5,,
-rocket_launcher,Rocket Launcher,Manual,1.5,1,0,6,2.5,75,3,1,TRUE,rocket,100,5,,

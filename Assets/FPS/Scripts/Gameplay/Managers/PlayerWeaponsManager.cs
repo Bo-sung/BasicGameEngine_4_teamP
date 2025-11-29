@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Unity.FPS.Game;
+
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -18,83 +18,62 @@ namespace Unity.FPS.Gameplay
             PutUpNew,
         }
 
-        // List of weapon the player will start with
+        [Header("Starting Weapons")]
         [Tooltip("플레이어 시작 무기")]
-        public List<WeaponController> StartingWeapons = new List<WeaponController>();
+        public List<Weapon> StartingWeapons = new List<Weapon>();
 
         [Header("References")]
-
-        // Secondary camera used to avoid seeing weapon go throw geometries
         [Tooltip("무기 전용 렌더링 카메라 (지오메트리 관통 방지용)")]
         public Camera WeaponCamera;
 
-        // Parent transform where all weapon will be added in the hierarchy
         [Tooltip("무기 장착될 소켓")]
         public Transform WeaponParentSocket;
 
-        // Position for weapons when active but not actively aiming
         [Tooltip("무기 기본 위치")]
         public Transform DefaultWeaponPosition;
 
-        // Position for weapons when aiming
         [Tooltip("조준시 무기 위치")]
         public Transform AimingWeaponPosition;
 
-        // Position for innactive weapons
         [Tooltip("무기 비활성화시 위치")]
         public Transform DownWeaponPosition;
 
         [Header("Weapon Bob")]
-
-        // Frequency at which the weapon will move around in the screen when the player is in movement
         [Tooltip("플레이어 이동 시 무기 흔들림 빈도")]
         public float BobFrequency = 10f;
 
-        // How fast the weapon bob is applied, the bigger value the fastest
         [Tooltip("무기 흔들림 적용 속도 (값이 클수록 빠름)")]
         public float BobSharpness = 10f;
 
-        // Distance the weapon bobs when not aiming
         [Tooltip("비조준시 무기 흔들림")]
         public float DefaultBobAmount = 0.05f;
 
-        // Distance the weapon bobs when aiming
         [Tooltip("조준시 무기 흔들림")]
         public float AimingBobAmount = 0.02f;
 
         [Header("Weapon Recoil")]
-
-        // This will affect how fast the recoil moves the weapon, the bigger the value, the fastest
         [Tooltip("무기 반동 이동 속도 (값이 클수록 빠름)")]
         public float RecoilSharpness = 50f;
 
-        // Maximum distance the recoil can affect the weapon
         [Tooltip("무기 반동 최대 거리")]
         public float MaxRecoilDistance = 0.5f;
 
-        // How fast the weapon goes back to it's original position after the recoil is finished
         [Tooltip("반동 후 무기 복귀 속도")]
         public float RecoilRestitutionSharpness = 10f;
 
         [Header("Misc")]
-
-        // Speed at which the aiming animatoin is played
         [Tooltip("조준 애니메이션 재생 속도")]
         public float AimingAnimationSpeed = 10f;
 
-        // Field of view when not aiming
         [Tooltip("기본 시야각")]
         public float DefaultFov = 60f;
 
-        // Portion of the regular FOV to apply to the weapon camera
         [Tooltip("무기 카메라 시야각 비율 (기본 FOV 대비)")]
         public float WeaponFovMultiplier = 1f;
 
-        // Delay before switching weapon a second time, to avoid recieving multiple inputs from mouse wheel
         [Tooltip("무기 교체 지연 시간 (마우스 휠 중복 입력 방지)")]
         public float WeaponSwitchDelay = 1f;
 
-        // Layer to set FPS weapon gameObjects to
         [Tooltip("FPS 무기용 레이어")]
         public LayerMask FpsWeaponLayer;
 
@@ -103,13 +82,13 @@ namespace Unity.FPS.Gameplay
         public bool IsPointingAtEnemy { get; private set; }
         public int ActiveWeaponIndex { get; private set; }
 
-        // 이벤트
-        public System.Action<WeaponController> OnSwitchedToWeapon;
-        public System.Action<WeaponController, int> OnAddedWeapon;
-        public System.Action<WeaponController, int> OnRemovedWeapon;
+        // 이벤트 (System.Action 사용)
+        public System.Action<Weapon> OnSwitchedToWeapon;
+        public System.Action<Weapon, int> OnAddedWeapon;
+        public System.Action<Weapon, int> OnRemovedWeapon;
 
         // 컴포넌트
-        WeaponController[] m_WeaponSlots = new WeaponController[9]; // 기본 9슬롯
+        Weapon[] m_WeaponSlots = new Weapon[9]; // 기본 9슬롯
         PlayerInputHandler m_InputHandler; // 입력 핸들러
         PlayerCharacterController m_PlayerCharacterController; // 플레이어 컨트롤러
 
@@ -123,6 +102,13 @@ namespace Unity.FPS.Gameplay
         float m_TimeStartedWeaponSwitch;
         WeaponSwitchState m_WeaponSwitchState;
         int m_WeaponSwitchNewWeaponIndex;
+
+        void Awake()
+        {
+            GameObject go_stageManager = GameObject.Find("StageManager");
+            var stagemanager = go_stageManager.GetComponent<StageManager>();
+            StartingWeapons = stagemanager.PlayerWeapons;
+        }
 
         void Start()
         {
@@ -154,7 +140,7 @@ namespace Unity.FPS.Gameplay
 
         void Update()
         {
-            WeaponController activeWeapon = GetActiveWeapon();
+            Weapon activeWeapon = GetActiveWeapon();
 
             // 장전중이면 패스
             if (activeWeapon != null && activeWeapon.IsReloading)
@@ -164,19 +150,18 @@ namespace Unity.FPS.Gameplay
             if (activeWeapon != null && m_WeaponSwitchState == WeaponSwitchState.Up)
             {
                 // 장전 처리
-                // 자동 장전중 AND 장전버튼 눌림 AND 현재 탄 비율이 가득차지 않음
-                if (!activeWeapon.AutomaticReload && m_InputHandler.GetReloadButtonDown() && activeWeapon.CurrentAmmoRatio < 1.0f)
+                // 수동 장전 AND 장전버튼 눌림 AND 장전 가능
+                if (m_InputHandler.GetReloadButtonDown() && activeWeapon.CanReload())
                 {
                     // 조준 해제하고 장전 시작
                     IsAiming = false;
-                    activeWeapon.StartReloadAnimation();
-                    activeWeapon.Reload();
+                    activeWeapon.TryStartReload();
                     return;
                 }
+
                 // 조준 여부 세팅
                 IsAiming = m_InputHandler.GetAimInputHeld();
 
-                // 발사 처리
                 // 발사 처리
                 bool hasFired = activeWeapon.HandleShootInputs(
                     m_InputHandler.GetFireInputDown(),
@@ -192,12 +177,11 @@ namespace Unity.FPS.Gameplay
             }
 
             // 무기 교체 처리
-            // 조준중 AND 차징중이 아님 AND ??
+            // 조준중 AND 차징중이 아님
             if (!IsAiming
                 && (activeWeapon == null || !activeWeapon.IsCharging)
                 && (m_WeaponSwitchState == WeaponSwitchState.Up || m_WeaponSwitchState == WeaponSwitchState.Down))
             {
-
                 int switchWeaponInput = m_InputHandler.GetSwitchWeaponInput();
                 // 무기 인풋 체크
                 if (switchWeaponInput != 0)
@@ -233,10 +217,9 @@ namespace Unity.FPS.Gameplay
             }
         }
 
-
         void LateUpdate()
         {
-            // LateUpdate에서 다양한 애니메이션 기능을 업데이트. 애니메이션된 팔 위치를 오버라이드해야 하기 때문
+            // LateUpdate에서 다양한 애니메이션 기능을 업데이트
             UpdateWeaponAiming();
             UpdateWeaponBob();
             UpdateWeaponRecoil();
@@ -247,7 +230,7 @@ namespace Unity.FPS.Gameplay
         }
 
         /// <summary>
-        /// 메안카메라와 무기 카메라 FOV 세팅
+        /// 메인카메라와 무기 카메라 FOV 세팅
         /// </summary>
         /// <param name="fov"></param>
         public void SetFov(float fov)
@@ -256,7 +239,6 @@ namespace Unity.FPS.Gameplay
             WeaponCamera.fieldOfView = fov * WeaponFovMultiplier;
         }
 
-        // Iterate on all weapon slots to find the next valid weapon to switch to
         /// <summary>
         /// 무기 스위칭
         /// 유효한 무기로 스위칭 하기 위해서 무기 슬롯 순환
@@ -269,7 +251,7 @@ namespace Unity.FPS.Gameplay
             int closestSlotDistance = m_WeaponSlots.Length;
             for (int i = 0; i < m_WeaponSlots.Length; i++)
             {
-                // 이 슬롯의 무기가 유효하면, 활성 슬롯 인덱스로부터의 "거리"를 계산하고 (오름차순 또는 내림차순) 지금까지 가장 가까운 거리라면 선택
+                // 이 슬롯의 무기가 유효하면, 활성 슬롯 인덱스로부터의 "거리"를 계산하고 지금까지 가장 가까운 거리라면 선택
                 if (i != ActiveWeaponIndex && GetWeaponAtSlotIndex(i) != null)
                 {
                     int distanceToActiveIndex = GetDistanceBetweenWeaponSlots(ActiveWeaponIndex, i, ascendingOrder);
@@ -299,20 +281,17 @@ namespace Unity.FPS.Gameplay
                 m_WeaponSwitchNewWeaponIndex = newWeaponIndex;
                 m_TimeStartedWeaponSwitch = Time.time;
 
-                // 처음으로 유효한 무기로 전환하는 경우 처리 (먼저 내리지 않고 단순히 올리기만 함)
+                // 처음으로 유효한 무기로 전환하는 경우 처리
                 if (GetActiveWeapon() == null)
                 {
                     m_WeaponMainLocalPosition = DownWeaponPosition.localPosition;
                     m_WeaponSwitchState = WeaponSwitchState.PutUpNew;
                     ActiveWeaponIndex = m_WeaponSwitchNewWeaponIndex;
 
-                    WeaponController newWeapon = GetWeaponAtSlotIndex(m_WeaponSwitchNewWeaponIndex);
-                    if (OnSwitchedToWeapon != null)
-                    {
-                        OnSwitchedToWeapon.Invoke(newWeapon);
-                    }
+                    Weapon newWeapon = GetWeaponAtSlotIndex(m_WeaponSwitchNewWeaponIndex);
+                    OnSwitchedToWeapon?.Invoke(newWeapon);
                 }
-                // 그렇지 않으면 다음 무기로 전환하기 위해 현재 무기를 내리고 있다는 것을 기억
+                // 그렇지 않으면 다음 무기로 전환하기 위해 현재 무기를 내림
                 else
                 {
                     m_WeaponSwitchState = WeaponSwitchState.PutDownPrevious;
@@ -325,7 +304,7 @@ namespace Unity.FPS.Gameplay
         /// </summary>
         /// <param name="weaponPrefab"></param>
         /// <returns></returns>
-        public WeaponController GetWeapon(WeaponController weaponPrefab)
+        public Weapon GetWeapon(Weapon weaponPrefab)
         {
             // 지정된 프리팹에서 나온 무기를 이미 가지고 있는지 확인
             for (var index = 0; index < m_WeaponSlots.Length; index++)
@@ -347,23 +326,32 @@ namespace Unity.FPS.Gameplay
         {
             if (m_WeaponSwitchState == WeaponSwitchState.Up)
             {
-                WeaponController activeWeapon = GetActiveWeapon();
+                Weapon activeWeapon = GetActiveWeapon();
                 if (IsAiming && activeWeapon)   // 조준중일때
                 {
-                    // 무기위치 -> 조준 위치로 이동.
-                    m_WeaponMainLocalPosition = Vector3.Lerp(m_WeaponMainLocalPosition, AimingWeaponPosition.localPosition + activeWeapon.AimOffset, AimingAnimationSpeed * Time.deltaTime);
+                    // 무기위치 -> 조준 위치로 이동
+                    m_WeaponMainLocalPosition = Vector3.Lerp(m_WeaponMainLocalPosition,
+                        AimingWeaponPosition.localPosition + activeWeapon.AimOffset,
+                        AimingAnimationSpeed * Time.deltaTime);
                     // 카메라 FOV 값 변경 (줌인)
-                    SetFov(Mathf.Lerp(m_PlayerCharacterController.PlayerCamera.fieldOfView, activeWeapon.AimZoomRatio * DefaultFov, AimingAnimationSpeed * Time.deltaTime));
+                    SetFov(Mathf.Lerp(m_PlayerCharacterController.PlayerCamera.fieldOfView,
+                        activeWeapon.AimZoomRatio * DefaultFov,
+                        AimingAnimationSpeed * Time.deltaTime));
                 }
                 else
                 {
                     // 무기위치 -> 기본 위치로 이동
-                    m_WeaponMainLocalPosition = Vector3.Lerp(m_WeaponMainLocalPosition, DefaultWeaponPosition.localPosition, AimingAnimationSpeed * Time.deltaTime);
+                    m_WeaponMainLocalPosition = Vector3.Lerp(m_WeaponMainLocalPosition,
+                        DefaultWeaponPosition.localPosition,
+                        AimingAnimationSpeed * Time.deltaTime);
                     // 카메라 FOV 값 변경 (기본값)
-                    SetFov(Mathf.Lerp(m_PlayerCharacterController.PlayerCamera.fieldOfView, DefaultFov, AimingAnimationSpeed * Time.deltaTime));
+                    SetFov(Mathf.Lerp(m_PlayerCharacterController.PlayerCamera.fieldOfView,
+                        DefaultFov,
+                        AimingAnimationSpeed * Time.deltaTime));
                 }
             }
         }
+
         /// <summary>
         /// 캐릭터 속도를 기반으로 무기 흔들림 애니메이션 업데이트
         /// </summary>
@@ -377,48 +365,47 @@ namespace Unity.FPS.Gameplay
                 // 이동 강도 계산 (0~1 범위)
                 float characterMovementFactor = 0f;
 
-                // 땅에 있을 때만 흔들림 적용 (공중에서는 흔들림 없음)
+                // 땅에 있을 때만 흔들림 적용
                 if (m_PlayerCharacterController.IsGrounded)
                 {
-                    // 현재 속도를 최대 속도(달리기 포함)로 나누어 0~1 비율 계산
                     characterMovementFactor = Mathf.Clamp01(
                         playerCharacterVelocity.magnitude /
                         (m_PlayerCharacterController.MaxSpeedOnGround * m_PlayerCharacterController.SprintSpeedModifier)
                     );
                 }
 
-                // 현재 흔들림 팩터를 목표값으로 부드럽게 보간 (급격한 변화 방지)
+                // 현재 흔들림 팩터를 목표값으로 부드럽게 보간
                 m_WeaponBobFactor = Mathf.Lerp(m_WeaponBobFactor, characterMovementFactor, BobSharpness * Time.deltaTime);
 
-                // 조준 상태에 따른 흔들림 크기 설정 (조준 시 더 작게)
+                // 조준 상태에 따른 흔들림 크기 설정
                 float bobAmount = IsAiming ? AimingBobAmount : DefaultBobAmount;
                 float frequency = BobFrequency;
 
-                // 좌우 흔들림: 기본 사인파 사용 (-1 ~ 1 범위)
+                // 좌우 흔들림: 기본 사인파 사용
                 float hBobValue = Mathf.Sin(Time.time * frequency) * bobAmount * m_WeaponBobFactor;
 
-                // 상하 흔들림: 2배 빠른 주파수 + 항상 양수로 변환 (걸음걸이 시뮬레이션)
+                // 상하 흔들림: 2배 빠른 주파수 + 항상 양수로 변환
                 float vBobValue = ((Mathf.Sin(Time.time * frequency * 2f) * 0.5f) + 0.5f) * bobAmount * m_WeaponBobFactor;
 
                 // 계산된 흔들림 값을 무기 위치에 적용
-                m_WeaponBobLocalPosition.x = hBobValue;           // 좌우 흔들림
-                m_WeaponBobLocalPosition.y = Mathf.Abs(vBobValue); // 상하 흔들림 (절댓값으로 아래로만)
+                m_WeaponBobLocalPosition.x = hBobValue;
+                m_WeaponBobLocalPosition.y = Mathf.Abs(vBobValue);
 
                 // 다음 프레임을 위해 현재 위치 저장
                 m_LastCharacterPosition = m_PlayerCharacterController.transform.position;
             }
         }
 
-        // Updates the weapon recoil animation
+        /// <summary>
+        /// 무기 반동 애니메이션 업데이트
+        /// </summary>
         void UpdateWeaponRecoil()
         {
-            // if the accumulated recoil is further away from the current position, make the current position move towards the recoil target
             if (m_WeaponRecoilLocalPosition.z >= m_AccumulatedRecoil.z * 0.99f)
             {
                 m_WeaponRecoilLocalPosition = Vector3.Lerp(m_WeaponRecoilLocalPosition, m_AccumulatedRecoil,
                     RecoilSharpness * Time.deltaTime);
             }
-            // otherwise, move recoil position to make it recover towards its resting pose
             else
             {
                 m_WeaponRecoilLocalPosition = Vector3.Lerp(m_WeaponRecoilLocalPosition, Vector3.zero,
@@ -427,10 +414,12 @@ namespace Unity.FPS.Gameplay
             }
         }
 
-        // Updates the animated transition of switching weapons
+        /// <summary>
+        /// 무기 교체 애니메이션 업데이트
+        /// </summary>
         void UpdateWeaponSwitching()
         {
-            // Calculate the time ratio (0 to 1) since weapon switch was triggered
+            // 무기 교체 트리거 이후 시간 비율 계산 (0 to 1)
             float switchingTimeFactor = 0f;
             if (WeaponSwitchDelay == 0f)
             {
@@ -441,13 +430,13 @@ namespace Unity.FPS.Gameplay
                 switchingTimeFactor = Mathf.Clamp01((Time.time - m_TimeStartedWeaponSwitch) / WeaponSwitchDelay);
             }
 
-            // Handle transiting to new switch state
+            // 새로운 교체 상태로 전환 처리
             if (switchingTimeFactor >= 1f)
             {
                 if (m_WeaponSwitchState == WeaponSwitchState.PutDownPrevious)
                 {
-                    // Deactivate old weapon
-                    WeaponController oldWeapon = GetWeaponAtSlotIndex(ActiveWeaponIndex);
+                    // 이전 무기 비활성화
+                    Weapon oldWeapon = GetWeaponAtSlotIndex(ActiveWeaponIndex);
                     if (oldWeapon != null)
                     {
                         oldWeapon.ShowWeapon(false);
@@ -456,12 +445,9 @@ namespace Unity.FPS.Gameplay
                     ActiveWeaponIndex = m_WeaponSwitchNewWeaponIndex;
                     switchingTimeFactor = 0f;
 
-                    // Activate new weapon
-                    WeaponController newWeapon = GetWeaponAtSlotIndex(ActiveWeaponIndex);
-                    if (OnSwitchedToWeapon != null)
-                    {
-                        OnSwitchedToWeapon.Invoke(newWeapon);
-                    }
+                    // 새 무기 활성화
+                    Weapon newWeapon = GetWeaponAtSlotIndex(ActiveWeaponIndex);
+                    OnSwitchedToWeapon?.Invoke(newWeapon);
 
                     if (newWeapon)
                     {
@@ -470,7 +456,6 @@ namespace Unity.FPS.Gameplay
                     }
                     else
                     {
-                        // if new weapon is null, don't follow through with putting weapon back up
                         m_WeaponSwitchState = WeaponSwitchState.Down;
                     }
                 }
@@ -480,7 +465,7 @@ namespace Unity.FPS.Gameplay
                 }
             }
 
-            // Handle moving the weapon socket position for the animated weapon switching
+            // 애니메이션된 무기 교체를 위한 무기 소켓 위치 이동 처리
             if (m_WeaponSwitchState == WeaponSwitchState.PutDownPrevious)
             {
                 m_WeaponMainLocalPosition = Vector3.Lerp(DefaultWeaponPosition.localPosition,
@@ -493,35 +478,36 @@ namespace Unity.FPS.Gameplay
             }
         }
 
-        // Adds a weapon to our inventory
-        public bool AddWeapon(WeaponController weaponPrefab)
+        /// <summary>
+        /// 인벤토리에 무기 추가
+        /// </summary>
+        /// <param name="weaponPrefab"></param>
+        /// <returns></returns>
+        public bool AddWeapon(Weapon weaponPrefab)
         {
-            // if we already hold this weapon type (a weapon coming from the same source prefab), don't add the weapon
+            // 이미 같은 타입의 무기를 가지고 있다면 추가하지 않음
             if (GetWeapon(weaponPrefab) != null)
             {
                 return false;
             }
 
-            // search our weapon slots for the first free one, assign the weapon to it, and return true if we found one. Return false otherwise
+            // 빈 무기 슬롯을 찾아서 무기 할당
             for (int i = 0; i < m_WeaponSlots.Length; i++)
             {
-                // only add the weapon if the slot is free
                 if (m_WeaponSlots[i] == null)
                 {
-                    // spawn the weapon prefab as child of the weapon socket
-                    WeaponController weaponInstance = Instantiate(weaponPrefab, WeaponParentSocket);
+                    // 무기 프리팹을 무기 소켓의 자식으로 생성
+                    Weapon weaponInstance = Instantiate(weaponPrefab, WeaponParentSocket);
                     weaponInstance.transform.localPosition = Vector3.zero;
                     weaponInstance.transform.localRotation = Quaternion.identity;
 
-                    // Set owner to this gameObject so the weapon can alter projectile/damage logic accordingly
+                    // 소유자 설정
                     weaponInstance.Owner = gameObject;
                     weaponInstance.SourcePrefab = weaponPrefab.gameObject;
                     weaponInstance.ShowWeapon(false);
 
-                    // Assign the first person layer to the weapon
-                    int layerIndex =
-                        Mathf.RoundToInt(Mathf.Log(FpsWeaponLayer.value,
-                            2)); // This function converts a layermask to a layer index
+                    // FPS 무기 레이어 할당
+                    int layerIndex = Mathf.RoundToInt(Mathf.Log(FpsWeaponLayer.value, 2));
                     foreach (Transform t in weaponInstance.gameObject.GetComponentsInChildren<Transform>(true))
                     {
                         t.gameObject.layer = layerIndex;
@@ -529,42 +515,40 @@ namespace Unity.FPS.Gameplay
 
                     m_WeaponSlots[i] = weaponInstance;
 
-                    if (OnAddedWeapon != null)
+                    OnAddedWeapon?.Invoke(weaponInstance, i);
+
+                    // 현재 활성 무기가 없다면 자동으로 교체
+                    if (GetActiveWeapon() == null)
                     {
-                        OnAddedWeapon.Invoke(weaponInstance, i);
+                        SwitchWeapon(true);
                     }
 
                     return true;
                 }
             }
 
-            // Handle auto-switching to weapon if no weapons currently
-            if (GetActiveWeapon() == null)
-            {
-                SwitchWeapon(true);
-            }
-
             return false;
         }
 
-        public bool RemoveWeapon(WeaponController weaponInstance)
+        /// <summary>
+        /// 무기 제거
+        /// </summary>
+        /// <param name="weaponInstance"></param>
+        /// <returns></returns>
+        public bool RemoveWeapon(Weapon weaponInstance)
         {
-            // Look through our slots for that weapon
+            // 슬롯에서 해당 무기 찾기
             for (int i = 0; i < m_WeaponSlots.Length; i++)
             {
-                // when weapon found, remove it
                 if (m_WeaponSlots[i] == weaponInstance)
                 {
                     m_WeaponSlots[i] = null;
 
-                    if (OnRemovedWeapon != null)
-                    {
-                        OnRemovedWeapon.Invoke(weaponInstance, i);
-                    }
+                    OnRemovedWeapon?.Invoke(weaponInstance, i);
 
                     Destroy(weaponInstance.gameObject);
 
-                    // Handle case of removing active weapon (switch to next weapon)
+                    // 활성 무기를 제거하는 경우 다음 무기로 교체
                     if (i == ActiveWeaponIndex)
                     {
                         SwitchWeapon(true);
@@ -580,26 +564,33 @@ namespace Unity.FPS.Gameplay
         /// <summary>
         /// 활성화 된 무기 가져오기
         /// </summary>
-        public WeaponController GetActiveWeapon()
+        public Weapon GetActiveWeapon()
         {
             return GetWeaponAtSlotIndex(ActiveWeaponIndex);
         }
 
-        public WeaponController GetWeaponAtSlotIndex(int index)
+        /// <summary>
+        /// 특정 슬롯 인덱스의 무기 가져오기
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Weapon GetWeaponAtSlotIndex(int index)
         {
-            // find the active weapon in our weapon slots based on our active weapon index
-            if (index >= 0 &&
-                index < m_WeaponSlots.Length)
+            if (index >= 0 && index < m_WeaponSlots.Length)
             {
                 return m_WeaponSlots[index];
             }
 
-            // if we didn't find a valid active weapon in our weapon slots, return null
             return null;
         }
 
-        // Calculates the "distance" between two weapon slot indexes
-        // For example: if we had 5 weapon slots, the distance between slots #2 and #4 would be 2 in ascending order, and 3 in descending order
+        /// <summary>
+        /// 두 무기 슬롯 인덱스 간의 "거리" 계산
+        /// </summary>
+        /// <param name="fromSlotIndex"></param>
+        /// <param name="toSlotIndex"></param>
+        /// <param name="ascendingOrder"></param>
+        /// <returns></returns>
         int GetDistanceBetweenWeaponSlots(int fromSlotIndex, int toSlotIndex, bool ascendingOrder)
         {
             int distanceBetweenSlots = 0;
@@ -621,7 +612,11 @@ namespace Unity.FPS.Gameplay
             return distanceBetweenSlots;
         }
 
-        void OnWeaponSwitched(WeaponController newWeapon)
+        /// <summary>
+        /// 무기 교체 시 호출되는 이벤트 핸들러
+        /// </summary>
+        /// <param name="newWeapon"></param>
+        void OnWeaponSwitched(Weapon newWeapon)
         {
             if (newWeapon != null)
             {

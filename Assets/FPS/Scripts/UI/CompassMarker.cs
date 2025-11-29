@@ -1,5 +1,4 @@
-﻿using Unity.FPS.AI;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace Unity.FPS.UI

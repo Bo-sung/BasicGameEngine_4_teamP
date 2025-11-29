@@ -1,4 +1,4 @@
-﻿using Unity.FPS.Game;
+﻿
 using Unity.FPS.Gameplay;
 using UnityEngine;
 
@@ -32,7 +32,7 @@ namespace Unity.FPS.UI
                 CreateNotification(evt.NotificationText);
         }
 
-        void OnPickupWeapon(WeaponController weaponController, int index)
+        void OnPickupWeapon(Weapon weaponController, int index)
         {
             if (index != 0)
                 CreateNotification("Picked up weapon : " + weaponController.WeaponName);

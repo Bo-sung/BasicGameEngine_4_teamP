@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using Unity.FPS.AI;
-using Unity.FPS.Game;
 using Unity.FPS.Gameplay;
 using UnityEditor;
 using UnityEngine;
@@ -302,7 +300,7 @@ namespace Unity.FPS.EditorExt
             for (int i = 0; i < allRenderers.Length; i++)
             {
                 Renderer r = allRenderers[i];
-                if (r.gameObject.GetComponent<IgnoreHeatMap>())
+                if (r.gameObject.GetComponent<IgnoreHeatMap>()) 
                     continue;
 
                 levelBounds.Encapsulate(r.bounds);

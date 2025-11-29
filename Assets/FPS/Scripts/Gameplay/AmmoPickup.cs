@@ -1,4 +1,4 @@
-using Unity.FPS.Game;
+﻿
 using UnityEngine;
 
 namespace Unity.FPS.Gameplay
@@ -6,7 +6,7 @@ namespace Unity.FPS.Gameplay
     public class AmmoPickup : Pickup
     {
         [Tooltip("Weapon those bullets are for")]
-        public WeaponController Weapon;
+        public Weapon Weapon;
 
         [Tooltip("Number of bullets the player gets")]
         public int BulletCount = 30;
@@ -16,7 +16,7 @@ namespace Unity.FPS.Gameplay
             PlayerWeaponsManager playerWeaponsManager = byPlayer.GetComponent<PlayerWeaponsManager>();
             if (playerWeaponsManager)
             {
-                WeaponController weapon = playerWeaponsManager.GetWeapon(Weapon);
+                Weapon weapon = playerWeaponsManager.GetWeapon(Weapon);
                 if (weapon != null)
                 {
                     weapon.AddCarriablePhysicalBullets(BulletCount);
