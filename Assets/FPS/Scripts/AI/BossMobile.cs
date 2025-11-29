@@ -59,9 +59,9 @@ public class BossMobile : EnemyMobile
 
     // 쫄몹 생성 관련 변수
     private bool m_HasSpawnedMinions = false;
-    private float m_LastMinionSpawnTime = 0f;
-    private float m_OriginalMaxHealth;
     private List<GameObject> m_SpawnedMinions = new List<GameObject>();
+
+    private float m_OriginalMaxHealth;
 
     // 스케일링된 보스 값
     private float m_SpawnHealthThresholdValue;
@@ -179,8 +179,6 @@ public class BossMobile : EnemyMobile
             yield return new WaitForSeconds(0.2f);
         }
 
-        // 마지막 생성 시간 업데이트
-        m_LastMinionSpawnTime = Time.time;
         m_IsSpawningMinions = false;
     }
 

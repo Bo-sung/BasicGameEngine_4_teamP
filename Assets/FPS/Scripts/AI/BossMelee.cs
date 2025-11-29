@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 보스 근접 적 - 무기 시스템으로 모든 패턴 관리
+/// 보스 근접 적 - 패턴 기반 공격 시스템
 /// 
-/// 무기 설정:
-/// - 무기 0: FloorPatternWeapon (Slash - 부채꼴 근접공격)
-/// - 무기 1: FloorPatternWeapon (Charge - 박스 범위 돌진)
-/// 
-/// 공격 결정:
-/// - 거리 <= SlashRange: 무기 0 (Slash)
-/// - 거리 <= ChargeRange: 무기 1 (Charge)
-/// - 체력 <= 50%: 쫄몹 소환 (무기 사용 X, 직접 소환)
+/// 공격 패턴:
+/// - ConsecutiveChargeAttack: 연속 돌진
+/// - GroundShockwaveAttack: 바닥 충격파
+/// - SlamAttack: 내려찍기
+/// - 쫄몹 소환: 체력 기반 트리거
 /// </summary>
 public class BossMelee : EnemyMobile
 {
@@ -22,29 +19,6 @@ public class BossMelee : EnemyMobile
 
     [Tooltip("보스 체력 스케일")]
     public float BossHealthMultiplier = 5f;
-
-    [Header("공격 거리 설정")]
-    [Tooltip("Slash 공격 범위")]
-    public float SlashRange = 3f;
-
-    [Tooltip("Charge 공격 범위")]
-    public float ChargeRange = 8f;
-
-    [Header("돌진 공격 설정")]
-    [Tooltip("돌진 거리")]
-    public float ChargeDistance = 8f;
-
-    [Tooltip("돌진 지속 시간")]
-    public float ChargeDuration = 1f;
-
-    [Tooltip("돌진 경고 프리팹 (없으면 기본 생성)")]
-    public GameObject ChargeWarningPrefab;
-
-    [Tooltip("돌진 데미지")]
-    public float ChargeDamage = 30f;
-
-    [Tooltip("돌진 데미지 반경")]
-    public float ChargeDamageRadius = 1.5f;
 
     [Header("쫄몹 생성 설정")]
     [Tooltip("쫄몹 생성 체력 비율 임계값 (0.0 ~ 1.0)")]
@@ -57,11 +31,18 @@ public class BossMelee : EnemyMobile
     [Tooltip("한 번에 생성할 쫄몹 수")]
     public int MinionsPerSpawn = 3;
 
+    [Tooltip("쫄몹 생성 간격 (초)")]
+    public float MinionSpawnInterval = 10f;
+
     [Tooltip("쫄몹 생성 위치 (여러 개 지정 가능)")]
     public Transform[] MinionSpawnPoints;
 
+    [Tooltip("쫄몹 생성 VFX")]
+    public GameObject MinionSpawnVFX;
+
     [Tooltip("쫄몹 생성 사운드")]
     public AudioClip MinionSpawnSFX;
+
 
     [Header("보스 죽음 효과")]
     [Tooltip("보스 죽음 VFX")]
@@ -76,10 +57,20 @@ public class BossMelee : EnemyMobile
     [Tooltip("보스 죽음 폭발 데미지")]
     public float BossDeathExplosionDamage = 50f;
 
-    // 공격 상태
-    private bool m_IsCharging = false;
+    [Header("공격 패턴")]
+    [Tooltip("사용할 공격 패턴 목록")]
+    public BossAttackPattern[] AttackPatterns;
 
-    // 쫄몹 생성 관련 변수
+    [Tooltip("패턴 쿨다운 (초)")]
+    public float PatternCooldown = 3f;
+
+    [Tooltip("보스 애니메이터")]
+    public Animator BossAnimator;
+
+    // 내부 상태
+    private bool m_IsExecutingPattern = false;
+    private bool m_IsSpawningMinions = false;
+    private float m_LastPatternTime = -999f;
     private bool m_HasSpawnedMinions = false;
     private float m_SpawnHealthThresholdValue;
     private List<GameObject> m_SpawnedMinions = new List<GameObject>();
@@ -101,6 +92,27 @@ public class BossMelee : EnemyMobile
             m_Health.OnDie += OnBossDie;
         }
 
+        // 애니메이터 자동 찾기
+        if (BossAnimator == null)
+        {
+            BossAnimator = GetComponent<Animator>();
+            if (BossAnimator == null)
+                BossAnimator = GetComponentInChildren<Animator>();
+        }
+
+        // 패턴 초기화
+        if (AttackPatterns != null)
+        {
+            foreach (var pattern in AttackPatterns)
+            {
+                if (pattern != null)
+                {
+                    pattern.Target = null; // Update에서 설정
+                    pattern.BossTransform = transform;
+                }
+            }
+        }
+
         // 쫄몹 생성 위치 자동 계산 (설정되지 않은 경우)
         if (MinionSpawnPoints == null || MinionSpawnPoints.Length <= 0)
         {
@@ -116,40 +128,111 @@ public class BossMelee : EnemyMobile
         if (m_EnemyController.KnownDetectedTarget == null)
             return;
 
-        // 플레이어를 향해 회전
-        FaceTarget();
+        // 패턴 타겟 업데이트
+        if (AttackPatterns != null)
+        {
+            foreach (var pattern in AttackPatterns)
+            {
+                if (pattern != null)
+                {
+                    pattern.Target = m_EnemyController.KnownDetectedTarget.transform;
+                }
+            }
+        }
 
         // 보스 체력 기반 상태 전환 (쫄몹 소환)
         if (IsBoss)
         {
             CheckHealthBasedPatterns();
         }
+    }
 
-        // 돌진 중이 아니고 소환 중이 아니면 다음 공격 결정
-        // (소환 코루틴이 돌고 있어도 Update는 계속 되므로, 상태 플래그 관리가 필요할 수 있음.
-        //  여기서는 간단히 소환은 독립적으로 실행되게 둠 - 필요시 m_IsSpawning 플래그 추가 가능)
-        if (!m_IsCharging)
+    protected override void UpdateCurrentAiState()
+    {
+        base.UpdateCurrentAiState();
+    }
+
+    protected override void HandleStateAttack()
+    {
+        if (m_EnemyController.KnownDetectedTarget == null)
+            return;
+
+        // 타겟 방향 조준
+        m_EnemyController.OrientTowards(m_EnemyController.KnownDetectedTarget.transform.position);
+
+        // 제자리 정지
+        m_EnemyController.SetNavDestination(transform.position);
+
+        // 공격 패턴 실행
+        if (AttackPatterns != null && AttackPatterns.Length > 0)
         {
-            DetermineNextAttackPattern();
+            ExecuteAttackPattern();
         }
     }
 
     /// <summary>
-    /// 플레이어를 향해 회전
+    /// 공격 패턴 실행
     /// </summary>
-    private void FaceTarget()
+    private void ExecuteAttackPattern()
     {
-        // 돌진 중에는 회전하지 않음
-        if (m_IsCharging) return;
+        // 패턴 실행 중이거나 쿨다운 중이면 스킵
+        if (m_IsExecutingPattern || m_IsSpawningMinions)
+            return;
 
-        Vector3 directionToTarget = (m_EnemyController.KnownDetectedTarget.transform.position - transform.position).normalized;
-        directionToTarget.y = 0;
+        if (Time.time < m_LastPatternTime + PatternCooldown)
+            return;
 
-        if (directionToTarget.sqrMagnitude > 0)
+        // 사용 가능한 패턴 찾기
+        List<BossAttackPattern> availablePatterns = new List<BossAttackPattern>();
+        foreach (var pattern in AttackPatterns)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+            if (pattern != null && pattern.CanExecute())
+            {
+                availablePatterns.Add(pattern);
+            }
         }
+
+        if (availablePatterns.Count > 0)
+        {
+            // 랜덤 패턴 선택
+            BossAttackPattern selectedPattern = availablePatterns[Random.Range(0, availablePatterns.Count)];
+            
+            m_IsExecutingPattern = true;
+            m_LastPatternTime = Time.time;
+            
+            // 디버그 로그
+            Debug.Log($"<color=cyan>[BossMelee] 패턴 시작: {selectedPattern.GetType().Name}</color>");
+            
+            StartCoroutine(ExecutePatternWithCallback(selectedPattern));
+        }
+    }
+
+    private IEnumerator ExecutePatternWithCallback(BossAttackPattern pattern)
+    {
+        // NavMeshAgent 비활성화 (이동 방지)
+        if (m_EnemyController != null && m_EnemyController.NavMeshAgent != null)
+        {
+            m_EnemyController.NavMeshAgent.isStopped = true;
+        }
+
+        pattern.StartPattern();
+
+        // 패턴이 완료될 때까지 대기
+        while (pattern.IsExecuting)
+        {
+            yield return null;
+        }
+
+        // 디버그 로그
+        Debug.Log($"<color=green>[BossMelee] 패턴 완료: {pattern.GetType().Name}</color>");
+
+        // NavMeshAgent 재활성화
+        if (m_EnemyController != null && m_EnemyController.NavMeshAgent != null)
+        {
+            m_EnemyController.NavMeshAgent.isStopped = false;
+        }
+
+        m_IsExecutingPattern = false;
     }
 
     /// <summary>
@@ -170,311 +253,147 @@ public class BossMelee : EnemyMobile
     /// </summary>
     private IEnumerator SpawnMinionsSequence()
     {
-        // 애니메이션 (있다면)
+        m_IsSpawningMinions = true;
+
+        // 보스 특수 애니메이션 또는 효과
         if (m_Animator != null)
         {
-            m_Animator.SetTrigger("SpawnMinions"); // 애니메이터에 해당 트리거가 있어야 함
+            m_Animator.SetTrigger("SpawnMinions");
+            m_Animator.SetFloat("MoveSpeed", 0f);
         }
 
-        // 사운드
+        // 생성 사운드 재생
         if (MinionSpawnSFX)
         {
             AudioUtility.CreateSFX(MinionSpawnSFX, transform.position, AudioUtility.AudioGroups.EnemyAttack, 1f);
         }
 
-        // 대기
-        yield return new WaitForSeconds(1.0f);
+        // 약간의 지연 시간
+        yield return new WaitForSeconds(1.5f);
 
-        // 소환
+        // 쫄몹 생성
         for (int i = 0; i < MinionsPerSpawn; i++)
         {
             SpawnMinion();
+            // 각 생성 사이에 약간의 지연
             yield return new WaitForSeconds(0.2f);
         }
+
+        m_IsSpawningMinions = false;
     }
 
-    /// <summary>
-    /// 단일 쫄몹 소환
-    /// </summary>
     private void SpawnMinion()
     {
-        if (MinionPrefab == null || MinionSpawnPoints.Length == 0) return;
+        if (MinionPrefab == null)
+            return;
 
-        Transform spawnPoint = MinionSpawnPoints[Random.Range(0, MinionSpawnPoints.Length)];
-        GameObject minion = Instantiate(MinionPrefab, spawnPoint.position, spawnPoint.rotation);
+        Vector3 spawnPosition;
+        Quaternion spawnRotation;
+
+        if (MinionSpawnPoints.Length == 0)
+        {
+            // 스폰 포인트가 없으면 보스 주변 랜덤 위치에 생성
+            float spawnRadius = 5f;
+            Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
+            spawnPosition = transform.position + new Vector3(randomCircle.x, 0, randomCircle.y);
+            spawnRotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
+        }
+        else
+        {
+            // 랜덤 생성 위치 선택
+            Transform spawnPoint = MinionSpawnPoints[Random.Range(0, MinionSpawnPoints.Length)];
+            spawnPosition = spawnPoint.position;
+            spawnRotation = spawnPoint.rotation;
+        }
+
+        // 생성 효과 표시
+        if (MinionSpawnVFX)
+        {
+            Instantiate(MinionSpawnVFX, spawnPosition, Quaternion.identity);
+        }
+
+        // 쫄몹 생성
+        GameObject minion = Instantiate(MinionPrefab, spawnPosition, spawnRotation);
+
+        // 생성된 쫄몹 추적
         m_SpawnedMinions.Add(minion);
 
-        // 소환된 쫄몹이 플레이어를 즉시 인지하도록 설정 (선택 사항)
-        EnemyController enemyController = minion.GetComponent<EnemyController>();
-        if (enemyController != null && m_EnemyController.KnownDetectedTarget != null)
+        // EnemyManager에 등록되도록 확인
+        EnemyMobile enemyMobile = minion.GetComponent<EnemyMobile>();
+        if (enemyMobile != null)
         {
-            // 필요시 타겟 전달 로직 추가
-        }
-    }
-
-    /// <summary>
-    /// 다음 공격 패턴 결정 및 실행
-    /// </summary>
-    private void DetermineNextAttackPattern()
-    {
-        if (m_EnemyController.KnownDetectedTarget == null)
-            return;
-
-        float distanceToTarget = Vector3.Distance(transform.position, m_EnemyController.KnownDetectedTarget.transform.position);
-
-        // 무기 0: Slash 공격 (부채꼴 근접) - 거리 <= 3m
-        if (distanceToTarget <= SlashRange)
-        {
-            m_EnemyController.TryAtack(m_EnemyController.KnownDetectedTarget.transform.position);
-        }
-        // 무기 1: Charge 공격 (돌진) - 거리 3~8m
-        else if (distanceToTarget <= ChargeRange)
-        {
-            StartCoroutine(PerformChargeAttack());
-        }
-        // 플레이어 쪽으로 이동
-        else
-        {
-            MoveTowardTarget();
-        }
-    }
-
-    /// <summary>
-    /// 박스 범위 돌진 공격 수행
-    /// 경고 표시 -> 돌진 -> 데미지
-    /// </summary>
-    private IEnumerator PerformChargeAttack()
-    {
-        m_IsCharging = true;
-
-        // 1. 방향 설정 및 경고
-        Vector3 targetPosition = m_EnemyController.KnownDetectedTarget.transform.position;
-        Vector3 chargeDirection = (targetPosition - transform.position).normalized;
-        chargeDirection.y = 0;
-        
-        // 정확한 회전
-        transform.rotation = Quaternion.LookRotation(chargeDirection);
-
-        // 경고 표시 (바닥)
-        GameObject warningObj = null;
-        Vector3 warningPos = transform.position + chargeDirection * (ChargeDistance * 0.5f) + Vector3.up * 0.1f;
-        
-        if (ChargeWarningPrefab != null)
-        {
-            warningObj = Instantiate(ChargeWarningPrefab, warningPos, Quaternion.LookRotation(chargeDirection));
-            // 스케일 조정 (길이: ChargeDistance, 폭: ChargeDamageRadius * 2)
-            warningObj.transform.localScale = new Vector3(ChargeDamageRadius * 2, 1f, ChargeDistance);
-        }
-        else
-        {
-            // 프리팹 없으면 임시 큐브 생성
-            warningObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            warningObj.transform.position = warningPos;
-            warningObj.transform.rotation = Quaternion.LookRotation(chargeDirection);
-            warningObj.transform.localScale = new Vector3(ChargeDamageRadius * 2, 0.1f, ChargeDistance);
-            warningObj.GetComponent<Collider>().enabled = false;
-            var renderer = warningObj.GetComponent<Renderer>();
-            if (renderer != null) renderer.material.color = new Color(1f, 0f, 0f, 0.3f);
-        }
-
-        // 돌진 준비 애니메이션
-        if (m_Animator != null)
-        {
-            m_Animator.SetTrigger("Charge");
-            m_Animator.SetFloat("MoveSpeed", 0f);
-        }
-
-        // 경고 시간 (1초)
-        yield return new WaitForSeconds(1.0f);
-
-        // 경고 제거
-        if (warningObj != null) Destroy(warningObj);
-
-        // 2. 돌진 실행
-        float elapsedTime = 0f;
-        
-        // 데미지 중복 적용 방지용 리스트
-        List<GameObject> damagedTargets = new List<GameObject>();
-
-        while (elapsedTime < ChargeDuration)
-        {
-            elapsedTime += Time.deltaTime;
-
-            // 돌진 이동
-            Vector3 moveStep = chargeDirection * (ChargeDistance / ChargeDuration) * Time.deltaTime;
-            
-            if (m_EnemyController.NavMeshAgent != null && m_EnemyController.NavMeshAgent.isOnNavMesh)
+            EnemyController enemyController = minion.GetComponent<EnemyController>();
+            if (enemyController != null && m_EnemyController.KnownDetectedTarget != null)
             {
-                m_EnemyController.NavMeshAgent.Move(moveStep);
-            }
-            else
-            {
-                transform.position += moveStep;
-            }
-
-            // 충돌 감지 및 데미지
-            Collider[] hits = Physics.OverlapSphere(transform.position + Vector3.up, ChargeDamageRadius);
-            foreach (var hit in hits)
-            {
-                if (hit.gameObject == gameObject) continue; // 자기 자신 제외
-
-                Damageable damageable = hit.GetComponent<Damageable>();
-                if (damageable != null && !damagedTargets.Contains(hit.gameObject))
-                {
-                    // 플레이어인지 확인 (아군 공격 방지 로직이 필요하다면 추가)
-                    Actor actor = hit.GetComponent<Actor>();
-                    if (actor != null && actor.affiliation != GetComponent<Actor>().affiliation)
-                    {
-                        damageable.InflictDamage(ChargeDamage, false, gameObject);
-                        damagedTargets.Add(hit.gameObject);
-                        // 넉백 효과 등을 줄 수도 있음
-                    }
-                }
-            }
-
-            yield return null;
-        }
-
-        m_IsCharging = false;
-    }
-
-    /// <summary>
-    /// 플레이어를 향해 이동
-    /// </summary>
-    private void MoveTowardTarget()
-    {
-        if (m_EnemyController.KnownDetectedTarget == null || m_IsCharging)
-            return;
-
-        if (m_EnemyController.NavMeshAgent != null)
-        {
-            m_EnemyController.SetNavDestination(m_EnemyController.KnownDetectedTarget.transform.position);
-
-            if (m_Animator != null)
-            {
-                m_Animator.SetFloat("MoveSpeed", m_EnemyController.NavMeshAgent.velocity.magnitude);
+                // 필요시 타겟 정보 전달
             }
         }
     }
 
     /// <summary>
-    /// 보스 사망 처리
+    /// 보스 죽음 처리
     /// </summary>
     private void OnBossDie()
     {
-        // 보스 죽음 효과
-        if (BossDeathVFX)
+        Debug.Log("<color=red>[BossMelee] 보스 사망</color>");
+
+        // VFX
+        if (BossDeathVFX != null)
         {
-            Instantiate(BossDeathVFX, transform.position, Quaternion.identity);
+            GameObject vfx = Instantiate(BossDeathVFX, transform.position, Quaternion.identity);
+            Destroy(vfx, 5f);
         }
 
-        // 보스 죽음 사운드
+        // 사운드
         if (BossDeathSFX)
         {
-            AudioUtility.CreateSFX(BossDeathSFX, transform.position, AudioUtility.AudioGroups.EnemyDetection, 1f);
+            AudioUtility.CreateSFX(BossDeathSFX, transform.position, AudioUtility.AudioGroups.EnemyAttack, 1f);
         }
 
         // 폭발 데미지
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, BossDeathExplosionRadius);
-        foreach (Collider hitCollider in hitColliders)
+        Collider[] hits = Physics.OverlapSphere(transform.position, BossDeathExplosionRadius);
+        foreach (var hit in hits)
         {
-            if (hitCollider == null || hitCollider.gameObject == gameObject)
-                continue;
-
-            Damageable damageable = hitCollider.GetComponent<Damageable>();
-            if (damageable != null)
+            Damageable damageable = hit.GetComponent<Damageable>();
+            if (damageable != null && hit.gameObject != gameObject)
             {
-                damageable.InflictDamage(BossDeathExplosionDamage, true, gameObject);
+                damageable.InflictDamage(BossDeathExplosionDamage, false, gameObject);
             }
         }
 
-        // 생성된 쫄몹 정리
+        // 생성한 쫄몹 제거
         foreach (var minion in m_SpawnedMinions)
         {
             if (minion != null)
             {
-                Health h = minion.GetComponent<Health>();
-                if (h != null) h.Kill();
-                else Destroy(minion);
+                Destroy(minion);
             }
         }
-
-        // 게임 승리 조건 트리거
-        AllObjectivesCompletedEvent victoryEvent = Events.AllObjectivesCompletedEvent;
-        EventManager.Broadcast(victoryEvent);
     }
 
     /// <summary>
-    /// 쫄몹 생성 위치 계산 (BossTurret에서 가져옴)
+    /// 쫄몹 생성 위치 계산
     /// </summary>
-    public List<Transform> GetMinionSpawnPositions(Transform bossTransform, float radius, int minionCount, LayerMask obstacleLayer)
+    private List<Transform> GetMinionSpawnPositions(Transform center, float radius, int count, LayerMask obstacles)
     {
-        List<Transform> spawnPositions = new List<Transform>();
-        if (bossTransform == null) return spawnPositions;
+        List<Transform> positions = new List<Transform>();
 
-        float minionRadius = 0.5f;
-
-        for (int i = 0; i < minionCount; i++)
+        for (int i = 0; i < count; i++)
         {
-            bool validPositionFound = false;
-            Vector3 spawnPos = Vector3.zero;
-            int maxAttempts = 30;
+            float angle = (360f / count) * i * Mathf.Deg2Rad;
+            Vector3 offset = new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
+            Vector3 position = center.position + offset;
 
-            for (int attempt = 0; attempt < maxAttempts && !validPositionFound; attempt++)
+            // 장애물 체크
+            if (!Physics.CheckSphere(position, 1f, obstacles))
             {
-                Vector3 randomDirection = Random.insideUnitSphere;
-                randomDirection.y = 0;
-                randomDirection.Normalize();
-                float randomDistance = radius * Mathf.Sqrt(Random.value);
-                spawnPos = bossTransform.position + randomDirection * randomDistance;
-                validPositionFound = !Physics.CheckSphere(spawnPos, minionRadius, obstacleLayer);
-            }
-
-            if (validPositionFound)
-            {
-                GameObject spawnMarker = new GameObject($"MinionSpawn_{i}");
-                spawnMarker.transform.position = spawnPos;
-                spawnMarker.transform.LookAt(new Vector3(bossTransform.position.x, spawnMarker.transform.position.y, bossTransform.position.z));
-                spawnPositions.Add(spawnMarker.transform);
+                GameObject spawnPoint = new GameObject($"MinionSpawnPoint_{i}");
+                spawnPoint.transform.position = position;
+                spawnPoint.transform.parent = center;
+                positions.Add(spawnPoint.transform);
             }
         }
-        return spawnPositions;
-    }
 
-    /// <summary>
-    /// 기즈모 표시
-    /// </summary>
-    void OnDrawGizmos()
-    {
-        // Slash 공격 범위 (빨강)
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, SlashRange);
-
-        // Charge 공격 범위 (노랑)
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, ChargeRange);
-
-        // 보스 죽음 폭발 범위 (어두운 빨강)
-        Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
-        Gizmos.DrawWireSphere(transform.position, BossDeathExplosionRadius);
-
-        // 쫄몹 생성 위치
-        if (MinionSpawnPoints != null)
-        {
-            Gizmos.color = Color.green;
-            foreach (var point in MinionSpawnPoints)
-            {
-                if (point != null) Gizmos.DrawWireSphere(point.position, 0.5f);
-            }
-        }
-    }
-
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-        if (m_Health != null)
-        {
-            m_Health.OnDie -= OnBossDie;
-        }
+        return positions;
     }
 }

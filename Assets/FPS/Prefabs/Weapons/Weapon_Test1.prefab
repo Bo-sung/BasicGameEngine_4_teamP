@@ -210,7 +210,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   WeaponName: Test1
-  WeaponIcon: {fileID: 21300000, guid: 3c187e19c32c13542ba8a0c1a3a88ece, type: 3}
+  weaponDescriptions:
+  - "\uB2E8\uBC1C \uBB34\uAE30"
+  WeaponIcon: {fileID: 21300000, guid: 202730d19d240cb40a88ff5134e3cf22, type: 3}
   CrosshairDataDefault:
     CrosshairSprite: {fileID: 21300000, guid: e881aa18189b12f4e915fc5b14ddc421, type: 3}
     CrosshairSize: 55
