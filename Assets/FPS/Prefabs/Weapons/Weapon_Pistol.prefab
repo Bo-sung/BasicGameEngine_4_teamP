@@ -259,8 +259,8 @@ MonoBehaviour:
   reloadType: 0
   maxAmmo: 7
   startingAmmo: 7
-  maxCarriedAmmo: 90
-  startingCarriedAmmo: 90
+  maxCarriedAmmo: 300
+  startingCarriedAmmo: 300
   reloadTime: 3
   emptyReloadTime: 3
   reloadStartSound: {fileID: 0}
